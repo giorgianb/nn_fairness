@@ -6,37 +6,6 @@ Stanley Bak, Nov 2021
 
 # pip3 install polytope
 
-<<<<<<< HEAD
-import numpy as np
-from scipy.spatial import ConvexHull
-
-from polytope import Polytope, extreme, volume
-
-def main():
-    """main entry point"""
-
-    # x >= 0
-    # y >= 0
-    # x + y <= 1
-    # corners should be (0,0), (1, 0), (-1, 0)
-    # volume should be 0.5
-
-    A = np.array([[0, -1], [-1, 0], [1, 1]], dtype=float)
-    b = np.array([0, 0, 1], dtype=float)
-
-    poly = Polytope(A, b)
-
-    #print(poly)
-    print(f"volume with random algorithm: {volume(poly)}")
-
-    vertices = extreme(poly)
-
-    #print(vertices)
-
-    hull = ConvexHull(vertices)
-
-    print(f"qhull volume: {hull.volume}")
-=======
 import time
 
 import numpy as np
@@ -163,7 +132,6 @@ def main():
 
     print("\n4d integrate test")
     test_4d_integrate()
->>>>>>> ed1bf7715f30d0d33145def6c732e1c74224ffeb
 
 if __name__ == "__main__":
     main()

@@ -75,9 +75,9 @@ def main():
 
     ages = [(0, 50), (0.2, 100), (1.0, 0)]
     priors = [(0, 20), (0.2, 5), (1.0, 0)]
-    labels = ["Age", "Priors"]
+    labels = ["Input 1 (Age)", "Input 2 (Income)"]
 
-    fig = plt.figure(figsize=(6, 5))
+    fig = plt.figure(figsize=(5, 4))
 
     funcs = [make_linear_interpolation_func(d) for d in [ages, priors]]
     volumes = []
@@ -115,7 +115,7 @@ def main():
     ax = plt.subplot2grid((1, 1), (0, 0))
 
     delta = 0.0025
-    X, Y = np.meshgrid(np.arange(0, 1.0 + delta/2, delta), np.arange(0, 1.0 + delta/2, delta))
+    X, Y = np.meshgrid(np.arange(0, 1.0 - delta/2, delta), np.arange(0, 1.0 - delta/2, delta))
     z_list = []
 
     print(X.shape)
