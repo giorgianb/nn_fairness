@@ -122,7 +122,8 @@ def make_linear_interpolation_func(pts):
 def main():
     """main entry point"""
 
-    num_samples = int(1e6)
+    num_samples = int(1e5)
+    print(f"sampling {num_samples} times...")
 
     init_plot()
     onnx_filename = "seed0.onnx"
