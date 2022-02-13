@@ -20,6 +20,12 @@ from nnenum.lpinstance import LpInstance
 import glpk_util
 from compute_volume import quad_integrate_glpk_lp
 
+
+from icecream import ic
+import os.path
+import pickle
+import tqdm
+
 def set_settings():
     """exact analysis settings"""
 
@@ -93,25 +99,45 @@ def make_linear_interpolation_func(pts):
 
     return f
 
+def make_distribution(data):
+    counts, boundaries = np.histogram(data)
+    centers = (boundaries[1:] + boundaries[:-1])/2
+    distribution = np.stack((centers, counts), axis=-1)
+
+    return distribution
+
 class ProbabilityDensityComputer:
     """computes probability of input at given point"""
 
     def __init__(self):
-        self.ages = [(0, 50), (0.2, 100), (1.0, 0)]
-        self.priors = [(0, 20), (0.2, 5), (1.0, 0)]
+        cache_path = '/home/giorgian/Documente/Fairness/NN-verification/cache'
+        random_seed = 0
+        cache_file_path = os.path.join(cache_path, f'np-adult-data-rs={random_seed}.pkl')
+        with open(cache_file_path, 'rb') as f:
+            data_dict = pickle.load(f)
 
-        self.funcs = [make_linear_interpolation_func(d) for d in [self.ages, self.priors]]
+        X_train = data_dict["X_train"]
+
+        self.ages  = make_distribution(X_train[:, 0])
+        self.edu_number  = make_distribution(X_train[:, 1])
+        self.hours_per_week  = make_distribution(X_train[:, 2])
+
+        self.funcs = [make_linear_interpolation_func(d) for d in [self.ages, self.edu_number, self.hours_per_week]]
 
         self.volumes = []
 
-        for func, data in zip(self.funcs, [self.ages, self.priors]):
-            v = quad(func, data[0][0], data[-1][0])[0]
+        for func, data in zip(self.funcs, [self.ages, self.edu_number, self.hours_per_week]):
+            v = quad(func, data[0][0], data[-1][0], limit=500)[0]
             self.volumes.append(v)
 
-    def sample(self, age, priors):
+    def sample(self, age, edu_number, hours_per_week):
         """get probability density at a point"""
 
-        return (self.funcs[0](age) / self.volumes[0]) * (self.funcs[1](priors) / self.volumes[1])
+        p = (self.funcs[0](age) / self.volumes[0])  \
+            * (self.funcs[1](edu_number) / self.volumes[1]) \
+            * (self.funcs[2](hours_per_week) / self.volumes[2])
+
+        return p
 
 def compute_intersection_lpi(lpi1, lpi2):
     """compute the intersection between two lpis"""
@@ -140,21 +166,17 @@ def main():
     init_plot()
     set_settings()
 
-    #Model Input: [ age, prior, race, sex]
-    #- age and prior is normailzed to be 0~1. 
-    #    - you can see the joint distribution in this plot: NN-verfication/results/fig-feature-2d-distribution-rs=0.pdf )
-    #- race and sex is in binary. 
-    #    - race=1 -> African-American 
-    #    - race=0 -> White
-    #    - sex=1 ->  Male
-    #    - sex=0 ->  Female
+    # Model Input:  [age, edu_num, hours_per_week, is_male, race_white, race_black, race_asian_pac_islander, race_amer_indian_eskimo, race_other]
+    # age             :       normalized to [0,1], original max: 90 , original min: 17
+    # edu_num         :       normalized to [0,1], original max: 16 , original min: 1
+    # hours_per_week  :       normalized to [0,1], original max: 99 , original min: 1
+    # is_male         : 1.0 means male, 0.0 means female,
+    # race-related:   : mutually exclusive indicator (with either 1.0 or 0.0)
 
-    # output interpretation: <= 0 mean jail, >= 0 means bail
+    # output interpretation: is_greater_than_50K: Binary indictor
 
-    # first pass: compute area of aa-men + aa-women
-    # compare with area of w-men + w-women
 
-    networks = [("seed0.onnx", "Seed 0")]#,
+    networks = [("/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", "Seed 0")]#,
 #                ("seed1.onnx", "Seed 1"),
 #                ("seed2.onnx", "Seed 2")]
 
@@ -171,11 +193,53 @@ def main():
     for onnx_filename, network_label in networks:
         network = load_onnx_network_optimized(onnx_filename)
 
-        aam_box = [[0.0, 1.0], [0.0, 1.0], [1.0, 1.0], [1.0, 1.0]]
-        wm_box = [[0.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 1.0]]
+        aam_box = [
+                [0.0, 1.0], # age
+                [0.0, 1.0], # edu_num
+                [0.0, 1.0], # hours_per_week
+                [1.0, 1.0], # is_male
+                [0.0, 0.0], # race_white
+                [1.0, 1.0], # race_black
+                [0.0, 0.0], # race_asian_pac_islander
+                [0.0, 0.0], # race_american_indian_eskimo
+                [0.0, 0.0], # race_other
+        ]
 
-        aaf_box = [[0.0, 1.0], [0.0, 1.0], [1.0, 1.0], [0.0, 0.0]]
-        wf_box = [[0.0, 1.0], [0.0, 1.0], [0.0, 0.0], [0.0, 0.0]]
+        wm_box = [
+                [0.0, 1.0], # age
+                [0.0, 1.0], # edu_num
+                [0.0, 1.0], # hours_per_week
+                [1.0, 1.0], # is_male
+                [1.0, 1.0], # race_white
+                [0.0, 0.0], # race_black
+                [0.0, 0.0], # race_asian_pac_islander
+                [0.0, 0.0], # race_american_indian_eskimo
+                [0.0, 0.0], # race_other
+        ]
+
+        aaf_box = [
+                [0.0, 1.0], # age
+                [0.0, 1.0], # edu_num
+                [0.0, 1.0], # hours_per_week
+                [0.0, 0.0], # is_male
+                [0.0, 0.0], # race_white
+                [1.0, 1.0], # race_black
+                [0.0, 0.0], # race_asian_pac_islander
+                [0.0, 0.0], # race_american_indian_eskimo
+                [0.0, 0.0], # race_other
+        ]
+
+        wf_box = [
+                [0.0, 1.0], # age
+                [0.0, 1.0], # edu_num
+                [0.0, 1.0], # hours_per_week
+                [0.0, 0.0], # is_male
+                [1.0, 1.0], # race_white
+                [0.0, 0.0], # race_black
+                [0.0, 0.0], # race_asian_pac_islander
+                [0.0, 0.0], # race_american_indian_eskimo
+                [0.0, 0.0], # race_other
+        ]
 
         male_inits = [aam_box, wm_box]
         female_inits = [aaf_box, wf_box]
@@ -183,17 +247,10 @@ def main():
         sex_labels = ['Male'] #['Male', 'Female']
 
         for inits, sex in zip(inits_list, sex_labels):
-            fig, ax_list = plt.subplots(1, 3, figsize=(13, 4.5), sharey=True)
-            fig.suptitle(f'Computed Exact Sets ({sex}, {network_label})', fontsize=20)
-        
-            colors = ['r', 'b', 'g']
-            labels = ['Low Risk African American', 'Low Risk White', 'Union']
-
             lpi_polys = [[], []]
+            labels = ['Low Risk African American', 'Low Risk White', 'Union'] 
 
             for i, init in enumerate(inits + [None]):
-                ax = ax_list[i]
-                ax.set_title(labels[i], fontsize=14)
                 total_probability = 0
 
                 if i < 2:
@@ -205,7 +262,7 @@ def main():
 
                     print(f"{labels[i]} split into {len(res.stars)} polys")
 
-                    for star in res.stars:
+                    for star in tqdm.tqdm(res.stars):
                         # add constaint that output < 0 (low risk)
                         assert star.a_mat.shape[0] == 1, "single output should mean single row"
                         row = star.a_mat[0]
@@ -215,17 +272,15 @@ def main():
 
                         if star.lpi.is_feasible():
                             # get verts in input space
-                            lpi_polys[i].append(star.lpi)
+                            lpi_polys[i].append(star.lpi.lp)
 
                             #prob_density.sample       
                             total_probability += quad_integrate_glpk_lp(star.lpi.lp, prob_density.sample)
 
-                            supp_pt_func = lambda vec: star.lpi.minimize(-vec)
+                            #supp_pt_func = lambda vec: star.lpi.minimize(-vec)
 
-                            verts = kamenev.get_verts(2, supp_pt_func)
+                            #verts = kamenev.get_verts(2, supp_pt_func)
 
-                            ax.fill(*zip(*verts), alpha=0.2, ec=colors[i], fc=colors[i])
-                            #ax.plot(*zip(*verts), alpha=0.5, color=colors[i])
                 else:
                     print(f"lp_polys size: {len(lpi_polys[0]), len(lpi_polys[1])}") 
                     # compute union of lp_polys
@@ -238,27 +293,12 @@ def main():
                             if intersection_lpi.is_feasible():
                                 total_probability += quad_integrate_glpk_lp(intersection_lpi.lp, prob_density.sample)
 
-                                supp_pt_func = lambda vec: intersection_lpi.minimize(-vec)
-
-                                verts = kamenev.get_verts(2, supp_pt_func)
-
-                                ax.fill(*zip(*verts), alpha=0.5, color=colors[i], fc=colors[i])
 
 
                 print(f"{labels[i]} probability: {total_probability}")
                 ax.text(0.02, 0.98, f"Computed Probability: {round(total_probability, 6)}", va='top')
                 
-                ax.set_xlabel('Age')
-                ax.set_ylabel('Priors')
-                ax.set_xlim([0, 1])
-                ax.set_ylim([0, 1])
 
-            #ax.legend()
-            # x axis = age
-            # y axis = prior
-            plot_filename = f"{sex}_{network_label.replace(' ', '_')}.png"
-            fig.savefig(plot_filename, bbox_inches='tight')
-            print(f"Wrote {plot_filename}")
 
 if __name__ == "__main__":
     main()
