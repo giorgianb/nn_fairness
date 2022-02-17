@@ -16,6 +16,9 @@ import onnxruntime as ort
 
 from nnenum.onnx_network import load_onnx_network_optimized, load_onnx_network
 from nnenum.network import nn_unflatten
+import os
+import pickle
+import tqdm
 
 def predict_with_onnxruntime(sess, *inputs):
     'run an onnx model'
@@ -39,20 +42,31 @@ class RandomSampler:
     """sample randomly from combinations of 1-d distributions"""
 
     def __init__(self):
-        self.ages = [(0, 50), (0.2, 100), (1.0, 0)]
+        cache_path = '/home/giorgian/Documente/Fairness/NN-verification/cache'
+        random_seed = 0
+        cache_file_path = os.path.join(cache_path, f'np-adult-data-rs={random_seed}.pkl')
+        with open(cache_file_path, 'rb') as f:
+            data_dict = pickle.load(f)
+
+        X_train = data_dict["X_train"]
+
+        self.ages  = make_distribution(X_train[:, 0])
         self.ages_limit = max([a for _, a in self.ages])
-        
-        self.priors = [(0, 20), (0.2, 5), (1.0, 0)]
-        self.priors_limit = max([p for _, p in self.priors])
+        self.edu_number  = make_distribution(X_train[:, 1])
+        self.edu_number_limit = max([e for _, e in self.edu_number])
+        self.hours_per_week  = make_distribution(X_train[:, 2])
+        self.hours_per_week_limit = max([e for _, e in self.hours_per_week])
 
         self.ages_func = make_linear_interpolation_func(self.ages)
-        self.priors_func = make_linear_interpolation_func(self.priors)
+        self.edu_number_func = make_linear_interpolation_func(self.edu_number)
+        self.hours_per_week_func = make_linear_interpolation_func(self.hours_per_week)
 
     def get_random_pt(self):
         """gets a random point using rejection sampling"""
 
         age = -1
-        prior = -1
+        edu_number = -1
+        hours_per_week = -1
 
         while True:
             age = np.random.rand()
@@ -62,13 +76,22 @@ class RandomSampler:
                 break
 
         while True:
-            prior = np.random.rand()
-            y = np.random.rand() * self.priors_limit
+            edu_number = np.random.rand()
+            y = np.random.rand() * self.edu_number_limit
 
-            if y < self.priors_func(prior):
+            if y < self.edu_number_func(edu_number):
                 break
 
-        return np.array([age, prior], dtype=float)
+        while True:
+            hours_per_week = np.random.rand()
+            y = np.random.rand() * self.hours_per_week_limit
+
+            if y < self.edu_number_func(hours_per_week):
+                break
+
+
+
+        return np.array([age, edu_number, hours_per_week], dtype=float)
 
 def make_linear_interpolation_func(pts):
     """converts a list of 2-d points to an interpolation function
@@ -119,137 +142,114 @@ def make_linear_interpolation_func(pts):
 
     return f
 
+def make_distribution(data):
+    counts, boundaries = np.histogram(data)
+    centers = (boundaries[1:] + boundaries[:-1])/2
+    distribution = np.stack((centers, counts), axis=-1)
+
+    return distribution
+
+
 def main():
     """main entry point"""
 
-    num_samples = int(1e5)
+    num_samples = int(1e6)
     print(f"sampling {num_samples} times...")
 
-    init_plot()
-    onnx_filename = "seed0.onnx"
+    onnx_filenames = [
+            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", 
+            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=True-sex_permute=False-both_sex_race_permute=False/model.onnx", 
+            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=True-both_sex_race_permute=False/model.onnx",
+            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=True/model.onnx",
+            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-True-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", 
+            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", 
+            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=True-sex_permute=False-both_sex_race_permute=False/model.onnx", 
+            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=True-both_sex_race_permute=False/model.onnx",
+            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=True/model.onnx",
+            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-True-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", 
+    ]
+
 
     # generate random inputs
     sex = "Male"
-    network_label = "Seed 0"
+    network_labels = ["(Small) No Permute", "(Small) Race Permute", "(Small) Sex Permute", "(Small) Race & Sex Permute", "(Small) Random Weight", "(Medium) No Permute", "(Medium) Race Permute", "(Medium) Sex Permute", "(Medium) Race & Sex Permute", "(Medium) Random Weight",]
     #aam_box = [[0.0, 1.0], [0.0, 1.0], [1.0, 1.0], [1.0, 1.0]]
     #wm_box = [[0.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 1.0]]
 
-    onnx_model = onnx.load(onnx_filename)
-    sess = ort.InferenceSession(onnx_model.SerializeToString())
-        
-    inp, _out, inp_dtype = get_io_nodes(onnx_model)
-    
-    inp_shape = tuple(d.dim_value if d.dim_value != 0 else 1 for d in inp.type.tensor_type.shape.dim)
-
-    input_34_list = [[1.0, 1.0], [0.0, 1.0]]
-
-    
-    lowrisk_lists: List[List[np.ndarray]] = [[], []]
-    union_list: List[np.ndarray] = []
-
-    #for color, label, input34 in zip(colors, labels, input_34_list):
-    pts_in_union = 0
-    sampler = RandomSampler()
-
-    all_pts = []
-
-    for _ in range(num_samples):
-        pt = sampler.get_random_pt()
-        all_pts.append(pt)
-
-        in_indices = []
-
-        for index, input34 in enumerate(input_34_list):
-            sample = np.hstack([pt, input34])
-
-            i = np.array(sample, dtype=inp_dtype)
-            i = i.reshape(inp_shape, order='C')
-
-            output = predict_with_onnxruntime(sess, i)[0, 0]
-
-            if output <= 0:
-                in_indices.append(index)
-
-        if len(in_indices) == 1:
-            lowrisk_lists[in_indices[0]].append(pt)
-        elif len(in_indices) == 2:
-            union_list.append(pt)
-            pts_in_union += 1
-
-    assert all_pts, "all_pts was empty"
-
-    ################## plot 1 - samples #######################
-    fig, ax_list = plt.subplots(1, 2, figsize=(10, 5), sharey=True)
-
-    for ax in ax_list:
-        ax.set_xlabel('Age', fontsize=16)
-        ax.set_ylabel('Priors', fontsize=16)
-        ax.set_xlim([0, 1])
-        ax.set_ylim([0, 1])
-
-    #ax_list[0].set_title('Heatmap', fontsize=16)
-    #ax_list[1].set_title('Contour', fontsize=16)
-
-    #ax_list[0].set_title('Rand Input Heatmap')
-    #ax_list[1].set_title('Rand Input Contour Plot')
-    fig.suptitle("Distribution of Random Inputs", fontsize=24)
-
-    ax_list[0].grid(False)
-    counts,ybins,xbins,image = ax_list[0].hist2d(*zip(*all_pts), bins=(30, 30), cmap=plt.cm.rainbow)
-
-    ax_list[1].plot(*zip(*all_pts), '.', color='k', ms=0.03, label="")
-    ax_list[1].contour(counts.transpose(), 14,
-               extent=[xbins[0],xbins[-1],ybins[0],ybins[-1]], linewidths=3)
-
-    plot_filename = f"rand_{sex}_{network_label.replace(' ', '_')}_inputs.png"
-    fig.savefig(plot_filename, bbox_inches='tight')
-    print(f"Saved to {plot_filename}")
-
-    plt.clf()
-
-    ############ plot 2 - outputs #############
-    fig, ax = plt.subplots(figsize=(8, 6))
-    ax.set_title(f'Random Samples Outputs ({sex}, {network_label})', fontsize=18)
-
-    colors = ['r', 'b', 'lime']
-    labels = ['African American', 'White', 'Union']
-    
-    for pts, color, label in zip(lowrisk_lists + [union_list], colors, labels):
-        if pts:
-            ax.plot(*zip(*pts), '.', ms=0.03, color=color)
-        #ax.plot(*zip(*result_pos), 'x', color=color, label=f"Low Risk {label}")
-
-    for color, label in zip(colors, labels):
-        ax.plot([-1], [-1], 'o', color=color, label=f"Classified as Low Risk ({label} Only)")
-
-    ax.set_xlabel('Age')
-    ax.set_ylabel('Priors')
-    ax.set_xlim([0, 1])
-    ax.set_ylim([0, 1])
-
-    text = ""
-    symmetric_difference_pts = 0
-
-    for n in range(2):
-        in_pts = len(lowrisk_lists[n]) + len(union_list)
-        line = f"Fraction in {labels[n]}: {in_pts/num_samples}"
-        text += line + "\n"
-        symmetric_difference_pts += in_pts - pts_in_union
-
-    line = f"Fraction in union: {pts_in_union/num_samples}"
-    text += line + "\n"
-    
-    line = f"Fraction in symmetric difference: {symmetric_difference_pts/num_samples}"
-    text += line
-    
-    print(text)
-    ax.text(0.3, 0.8, text, va='top')
-
-    ax.legend(loc='upper right')
+    for onnx_filename, network_label in zip(onnx_filenames, network_labels):
+        print(f"[Testing model '{network_label}']")
+        onnx_model = onnx.load(onnx_filename)
+        sess = ort.InferenceSession(onnx_model.SerializeToString())
             
-    plot_filename = f"rand_{sex}_{network_label.replace(' ', '_')}_outputs.png"
-    fig.savefig(plot_filename, bbox_inches='tight')
-    print(f"saved to {plot_filename}")
+        inp, _out, inp_dtype = get_io_nodes(onnx_model)
+        
+        inp_shape = tuple(d.dim_value if d.dim_value != 0 else 1 for d in inp.type.tensor_type.shape.dim)
+
+        # Fills in the rest of the values
+        input_rest_list = [[
+            1.0,    # is_male
+            1.0,    # race_white
+            0.0,    # race_black
+            0.0,    # race_asian_pac_islander
+            0.0,    # race_american_indian_eskimo
+            0.0     # race_other
+            ], 
+            [1.0,   # is_male
+            0.0,    # race_white
+            1.0,    # race_black
+            0.0,    # race_asian_pac_islander
+            0.0,    # race_american_indian_eskimo
+            0.0     # race_other
+            ], 
+        ]
+
+
+        
+        lowrisk_lists: List[List[np.ndarray]] = [[], []]
+        union_list: List[np.ndarray] = []
+        labels = ['White Male', 'Black Male', 'Union']
+
+        #for color, label, rest in zip(colors, labels, input_rest_list):
+        pts_in_union = 0
+        sampler = RandomSampler()
+
+        all_pts = []
+
+        for _ in tqdm.tqdm(range(num_samples)):
+            pt = sampler.get_random_pt()
+            all_pts.append(pt)
+
+            in_indices = []
+
+            for index, rest in enumerate(input_rest_list):
+                sample = np.hstack([pt, rest])
+
+                i = np.array(sample, dtype=inp_dtype)
+                i = i.reshape(inp_shape, order='C')
+
+                output = predict_with_onnxruntime(sess, i)[0, 0]
+
+                if output >= 0:
+                    in_indices.append(index)
+
+            if len(in_indices) == 1:
+                lowrisk_lists[in_indices[0]].append(pt)
+            elif len(in_indices) == 2:
+                union_list.append(pt)
+                pts_in_union += 1
+
+        assert all_pts, "all_pts was empty"
+
+        symmetric_difference_pts = 0
+
+        print(f"Results for model '{network_label}'")
+        for n in range(2):
+            in_pts = len(lowrisk_lists[n]) + len(union_list)
+            print(f"Fraction in {labels[n]}: {in_pts/num_samples}")
+            symmetric_difference_pts += in_pts - pts_in_union
+
+        print(f"Fraction in union: {pts_in_union/num_samples}")
+        print(f"Fraction in symmetric difference: {symmetric_difference_pts/num_samples}")
 
 def get_io_nodes(onnx_model):
     'returns 3 -tuple: input node, output nodes, input dtype'
