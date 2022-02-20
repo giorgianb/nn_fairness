@@ -69,7 +69,7 @@ def quad_integrate_polytope(A, b, func_to_integrate=None):
     lp = glpk_util.from_constraints(A, b)
     #print(glpk_util.to_str(lp))
 
-    rv = quad_integrate_glpk_lp(lp, func_to_integrate)
+    rv = quad_integrate_glpk_lp(lp, func_to_integrate, limit=500)
 
     glpk.glp_delete_prob(lp)
 
@@ -94,7 +94,7 @@ def quad_integrate_glpk_lp(glpk_lp_instance, func_to_integrate=None):
         if len(args) + 1 < integrator.num_cols:
             dim_lb, dim_ub = integrator.get_bounds(*args, x)
 
-            rv = quad(eval_func, dim_lb, dim_ub, args=(*args, x))[0]
+            rv = quad(eval_func, dim_lb, dim_ub, args=(*args, x), limit=500)[0]
         else:
             # base case: last dimension
             rv = func_to_integrate(*args, x)
@@ -102,7 +102,7 @@ def quad_integrate_glpk_lp(glpk_lp_instance, func_to_integrate=None):
         return rv
 
     lb, ub = integrator.get_bounds()
-    rv = quad(eval_func, lb, ub)[0]
+    rv = quad(eval_func, lb, ub, limit=500)[0]
 
     return rv
 

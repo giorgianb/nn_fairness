@@ -42,7 +42,7 @@ class RandomSampler:
     """sample randomly from combinations of 1-d distributions"""
 
     def __init__(self):
-        cache_path = '/home/giorgian/Documente/Fairness/NN-verification/cache'
+        cache_path = 'NN-verification/cache'
         random_seed = 0
         cache_file_path = os.path.join(cache_path, f'np-adult-data-rs={random_seed}.pkl')
         with open(cache_file_path, 'rb') as f:
@@ -153,20 +153,20 @@ def make_distribution(data):
 def main():
     """main entry point"""
 
-    num_samples = int(1e6)
+    num_samples = int(1e8)
     print(f"sampling {num_samples} times...")
 
     onnx_filenames = [
-            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", 
-            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=True-sex_permute=False-both_sex_race_permute=False/model.onnx", 
-            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=True-both_sex_race_permute=False/model.onnx",
-            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=True/model.onnx",
-            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-True-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", 
-            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", 
-            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=True-sex_permute=False-both_sex_race_permute=False/model.onnx", 
-            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=True-both_sex_race_permute=False/model.onnx",
-            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=True/model.onnx",
-            "/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-True-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", 
+            "NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", 
+            "NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=True-sex_permute=False-both_sex_race_permute=False/model.onnx", 
+            "NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=True-both_sex_race_permute=False/model.onnx",
+            "NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=True/model.onnx",
+            "NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-True-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", 
+            "NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", 
+            "NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=True-sex_permute=False-both_sex_race_permute=False/model.onnx", 
+            "NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=True-both_sex_race_permute=False/model.onnx",
+            "NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=True/model.onnx",
+            "NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-True-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", 
     ]
 
 

@@ -100,7 +100,7 @@ def make_linear_interpolation_func(pts):
     return f
 
 def make_distribution(data):
-    counts, boundaries = np.histogram(data)
+    counts, boundaries = np.histogram(data, bins=10)
     centers = (boundaries[1:] + boundaries[:-1])/2
     distribution = np.stack((centers, counts), axis=-1)
 
@@ -110,7 +110,7 @@ class ProbabilityDensityComputer:
     """computes probability of input at given point"""
 
     def __init__(self):
-        cache_path = '/home/giorgian/Documente/Fairness/NN-verification/cache'
+        cache_path = 'NN-verification/cache'
         random_seed = 0
         cache_file_path = os.path.join(cache_path, f'np-adult-data-rs={random_seed}.pkl')
         with open(cache_file_path, 'rb') as f:
@@ -130,14 +130,24 @@ class ProbabilityDensityComputer:
             v = quad(func, data[0][0], data[-1][0], limit=500)[0]
             self.volumes.append(v)
 
-    def sample(self, age, edu_number, hours_per_week):
+    def sample(self, age, edu_number):
         """get probability density at a point"""
 
         p = (self.funcs[0](age) / self.volumes[0])  \
-            * (self.funcs[1](edu_number) / self.volumes[1]) \
-            * (self.funcs[2](hours_per_week) / self.volumes[2])
+            * (self.funcs[1](edu_number) / self.volumes[1])
 
         return p
+
+
+
+#    def sample(self, age, edu_number, hours_per_week):
+#        """get probability density at a point"""
+#
+#        p = (self.funcs[0](age) / self.volumes[0])  \
+#            * (self.funcs[1](edu_number) / self.volumes[1]) \
+#            * (self.funcs[2](hours_per_week) / self.volumes[2])
+#
+#        return p
 
 def compute_intersection_lpi(lpi1, lpi2):
     """compute the intersection between two lpis"""
@@ -176,7 +186,7 @@ def main():
     # output interpretation: is_greater_than_50K: Binary indictor
 
 
-    networks = [("/home/giorgian/Documente/Fairness/NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", "Seed 0")]#,
+    networks = [("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", "Seed 0")]#,
 #                ("seed1.onnx", "Seed 1"),
 #                ("seed2.onnx", "Seed 2")]
 
@@ -196,7 +206,7 @@ def main():
         aam_box = [
                 [0.0, 1.0], # age
                 [0.0, 1.0], # edu_num
-                [0.0, 1.0], # hours_per_week
+                [1.0, 1.0], # hours_per_week
                 [1.0, 1.0], # is_male
                 [0.0, 0.0], # race_white
                 [1.0, 1.0], # race_black
@@ -208,7 +218,7 @@ def main():
         wm_box = [
                 [0.0, 1.0], # age
                 [0.0, 1.0], # edu_num
-                [0.0, 1.0], # hours_per_week
+                [1.0, 1.0], # hours_per_week
                 [1.0, 1.0], # is_male
                 [1.0, 1.0], # race_white
                 [0.0, 0.0], # race_black
@@ -272,7 +282,7 @@ def main():
 
                         if star.lpi.is_feasible():
                             # get verts in input space
-                            lpi_polys[i].append(star.lpi.lp)
+                            lpi_polys[i].append(star.lpi)
 
                             #prob_density.sample       
                             total_probability += quad_integrate_glpk_lp(star.lpi.lp, prob_density.sample)
@@ -296,7 +306,6 @@ def main():
 
 
                 print(f"{labels[i]} probability: {total_probability}")
-                ax.text(0.02, 0.98, f"Computed Probability: {round(total_probability, 6)}", va='top')
                 
 
 
