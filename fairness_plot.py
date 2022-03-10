@@ -18,13 +18,17 @@ from nnenum import kamenev
 from nnenum.lpinstance import LpInstance
 
 import glpk_util
-from compute_volume import quad_integrate_glpk_lp
+from compute_volume import quad_integrate_glpk_lp, rand_integrate_polytope, quad_integrate_polytope, qhull_integrate_polytope
 
 
 from icecream import ic
 import os.path
 import pickle
 import tqdm
+from scipy.sparse import csr_matrix
+from itertools import product
+
+INTEGRATION = 'block-qhull'
 
 def set_settings():
     """exact analysis settings"""
@@ -49,6 +53,63 @@ def init_plot():
 
     #matplotlib.use('TkAgg') # set backend
     plt.style.use(['bmh', 'bak_matplotlib.mlpstyle'])
+
+def integrate(lpi, pdf):
+    global INTEGRATION
+    if INTEGRATION == 'random':
+        A = lpi.get_constraints_csr().toarray()
+        b = lpi.get_rhs()
+        return rand_integrate_polytope(A, b, func_to_integrate=pdf.sample, samples=100000)
+    elif INTEGRATION == 'quad':
+        return quad_integrate_glpk_lp(lpi.lp, pdf.sample)
+    elif INTEGRATION == 'block':
+        prob = 0
+        for region in pdf.regions:
+            region = np.array(region)
+            A = lpi.get_constraints_csr().toarray()
+            b = lpi.get_rhs()
+            point = []
+            for i, (lbound, ubound) in enumerate(region):
+                point.append((lbound + ubound) / 2)
+                row = np.zeros((1, len(region)))
+                row[0, i] = 1
+                A = np.concatenate((A, row, -row), axis=0)
+                b = np.append(b, (ubound, -lbound))
+            prob += quad_integrate_polytope(A, b)*pdf.sample(*point)
+
+        return prob
+    elif INTEGRATION == 'block-qhull':
+        prob = 0
+        for region in pdf.regions:
+            region = np.array(region)
+            A = lpi.get_constraints_csr().toarray()
+            b = lpi.get_rhs()
+            point = []
+            for i, (lbound, ubound) in enumerate(region):
+                point.append((lbound + ubound) / 2)
+                row = np.zeros((1, len(region)))
+                row[0, i] = 1
+                A = np.concatenate((A, row, -row), axis=0)
+                b = np.append(b, (ubound, -lbound))
+            prob += qhull_integrate_polytope(A, b)*pdf.sample(*point)
+
+        return prob
+    elif INTEGRATION == 'block-linear':
+        prob = 0
+        for region in pdf.regions:
+            region = np.array(region)
+            A = lpi.get_constraints_csr().toarray()
+            b = lpi.get_rhs()
+            for i, (lbound, ubound) in enumerate(region):
+                row = np.zeros((1, len(region)))
+                row[0, i] = 1
+                A = np.concatenate((A, row, -row), axis=0)
+                b = np.append(b, (ubound, -lbound))
+            prob += quad_integrate_polytope(A, b, pdf.sample)
+
+        return prob
+
+
 
 def make_linear_interpolation_func(pts):
     """converts a list of 2-d points to an interpolation function
@@ -130,24 +191,25 @@ class ProbabilityDensityComputer:
             v = quad(func, data[0][0], data[-1][0], limit=500)[0]
             self.volumes.append(v)
 
-    def sample(self, age, edu_number):
+    def sample(self, *args):
         """get probability density at a point"""
 
-        p = (self.funcs[0](age) / self.volumes[0])  \
-            * (self.funcs[1](edu_number) / self.volumes[1])
+        p = 1
+        for func, volume, x in zip(self.funcs, self.volumes, args):
+            p *= func(x)/volume
 
         return p
 
+    @property
+    def regions(self):
+        age_bounds = zip(self.ages[:, 0], self.ages[1:, 0])
+        edu_bounds = zip(self.edu_number[:, 0], self.edu_number[1:, 0])
+        #jhour_bounds = zip(self.hours_per_week[:, 0], self.hours_per_week[1:, 0])
+
+        return product(age_bounds, edu_bounds)#, hour_bounds)
 
 
-#    def sample(self, age, edu_number, hours_per_week):
-#        """get probability density at a point"""
-#
-#        p = (self.funcs[0](age) / self.volumes[0])  \
-#            * (self.funcs[1](edu_number) / self.volumes[1]) \
-#            * (self.funcs[2](hours_per_week) / self.volumes[2])
-#
-#        return p
+
 
 def compute_intersection_lpi(lpi1, lpi2):
     """compute the intersection between two lpis"""
@@ -187,8 +249,18 @@ def main():
 
 
     networks = [("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", "Seed 0")]#,
-#                ("seed1.onnx", "Seed 1"),
-#                ("seed2.onnx", "Seed 2")]
+    networks = [
+            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", "(Small) No Permute"),
+            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=True-sex_permute=False-both_sex_race_permute=False/model.onnx", "(Small) Race Permute"),
+            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=True-both_sex_race_permute=False/model.onnx", "(Small) Sex Permute"), 
+            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=True/model.onnx", "(Small) Race & Sex Permute"), 
+            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-True-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", "(Small) Random Weight"),
+            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", "(Medium) No Permute"),
+            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=True-sex_permute=False-both_sex_race_permute=False/model.onnx", "(Medium) Race Permute"),
+            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=True-both_sex_race_permute=False/model.onnx", "(Medium) Sex Permute"),
+            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=True/model.onnx", "(Medium) Race & Sex Permute"),
+            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-True-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", "(Medium) Random Weight"),
+    ]
 
     # ideas:
     # Initial set defined as star: (triangle), where unused input dimension is the pdf
@@ -270,7 +342,7 @@ def main():
                     result_str = res.result_str
                     assert result_str == "none"
 
-                    print(f"{labels[i]} split into {len(res.stars)} polys")
+                    print(f"[{network_label}] {labels[i]} split into {len(res.stars)} polys")
 
                     for star in tqdm.tqdm(res.stars):
                         # add constaint that output < 0 (low risk)
@@ -282,30 +354,30 @@ def main():
 
                         if star.lpi.is_feasible():
                             # get verts in input space
+
                             lpi_polys[i].append(star.lpi)
 
                             #prob_density.sample       
-                            total_probability += quad_integrate_glpk_lp(star.lpi.lp, prob_density.sample)
+                            total_probability += integrate(star.lpi, prob_density)
 
                             #supp_pt_func = lambda vec: star.lpi.minimize(-vec)
 
                             #verts = kamenev.get_verts(2, supp_pt_func)
 
                 else:
-                    print(f"lp_polys size: {len(lpi_polys[0]), len(lpi_polys[1])}") 
+                    print(f"[{network_label}] lp_polys size: {len(lpi_polys[0]), len(lpi_polys[1])}") 
                     # compute union of lp_polys
-                    for lpi1 in lpi_polys[0]:
-                        for lpi2 in lpi_polys[1]:
-                            #intersection_poly = glpk_util.intersect(poly1, poly2)
+                    for lpi1, lpi2 in tqdm.tqdm(tuple(product(lpi_polys[0], lpi_polys[1]))):
+                        #intersection_poly = glpk_util.intersect(poly1, poly2)
 
-                            intersection_lpi = compute_intersection_lpi(lpi1, lpi2)
+                        intersection_lpi = compute_intersection_lpi(lpi1, lpi2)
 
-                            if intersection_lpi.is_feasible():
-                                total_probability += quad_integrate_glpk_lp(intersection_lpi.lp, prob_density.sample)
-
+                        if intersection_lpi.is_feasible():
+                                total_probability += integrate(intersection_lpi, prob_density)
 
 
-                print(f"{labels[i]} probability: {total_probability}")
+
+                print(f"[{network_label}] {labels[i]} probability: {total_probability}")
                 
 
 

@@ -8,6 +8,9 @@ import numpy as np
 
 import swiglpk as glpk
 import glpk_util
+from polytope import Polytope, extreme
+from scipy.spatial import ConvexHull
+from icecream import ic
 
 def rand_integrate_polytope(A, b, func_to_integrate=None, samples=100000):
     """use random sampling to integrate a function over a polytope domian
@@ -69,11 +72,27 @@ def quad_integrate_polytope(A, b, func_to_integrate=None):
     lp = glpk_util.from_constraints(A, b)
     #print(glpk_util.to_str(lp))
 
-    rv = quad_integrate_glpk_lp(lp, func_to_integrate, limit=500)
+    rv = quad_integrate_glpk_lp(lp, func_to_integrate)
 
     glpk.glp_delete_prob(lp)
 
     return rv
+
+def qhull_integrate_polytope(A, b, func_to_integrate=None):
+    """use scipy.quad to integrate a function over a polytope domain
+
+    params are the leq constraints Ax <= b
+
+    if func_to_integrate is None, assumes function is 1 everywhere (returns volume)
+    """
+    poly = Polytope(A, b)
+    vertices = extreme(poly)
+    if vertices is None:
+        return 0
+
+    hull = ConvexHull(vertices)
+
+    return hull.volume
 
 def quad_integrate_glpk_lp(glpk_lp_instance, func_to_integrate=None):
     """use scipy.quad to integrate a function over a polytope domain
