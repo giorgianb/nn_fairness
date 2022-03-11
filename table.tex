@@ -1,0 +1,74 @@
+\documentclass{article}
+\usepackage{pgfplotstable}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\pgfplotsset{compat=newest}
+
+\begin{document}
+\begin{table}[h!]
+	\centering
+	\caption{Does an individual make $<50$k?}
+    \pgfplotstabletypeset[
+        col sep=comma,
+	columns={size,action,r1,metric,r2,value},
+        columns/size/.style = {
+            string type, column name = Model Size},
+        columns/action/.style = {
+            string type, column name = Fairness Action},
+	columns/metric/.style = {
+            string type, column name = Race},
+        columns/r1/.style = {
+            string type, column name = Metric},
+	columns/r2/.style = {
+            string type, column name = Over Race},
+        columns/value/.style = {
+            column name = Metric Value},
+        every head row/.style={
+            before row={\toprule},
+	},
+        every last row/.style={after
+        row=\bottomrule}]{results.csv}
+\end{table}
+
+We use several neural network models to determine if an individual
+makes over $50k$.
+We make the following observations to helpe ase the reading of the table.
+\begin{itemize}
+	\item For the small model with no fairness action,
+		black's advantage over white is $0.29$. This means
+		if $t_1$ is the proportion of black individuals who
+		are judge to make $<50$k by the model,
+		and $t_2$ is the proportion of black individuals who
+		are also judge to make $<50$k using the white
+		criteria, $t_1 - t_2 = 0.29$. Out of all the black
+		population, 29\% of them would have not been judge to
+		make $<50$k if they had been white.
+	\item For the small model with no fairness action, the
+		model's preference for black features over white is
+		$0.39$. If $t_1$ is the proportion of black
+		individuals judge to make $<50$k by the
+		model, and $t_2$ is the proportion of white
+		individuals judge to make  $<50$k by the
+		model using the black criteria, $t_1 - t_2=0.39$.
+	\item For the small model with no fairness action,
+		white's advantage over black is $0\approx
+		\num{-5.55e-17}$. This means there is no
+		white individual that the model judged to make
+		$<50$k who would also not have not received
+		the same judgement if they were black.
+	\item We see that there is no difference in the preference and
+		advantage compared to no fairness action for either races when
+		the sex is permuted, which is expected. However, when we assign
+		to race and random weight, there is still no difference  in the
+		preferences and advantage compared to no fairness action for
+		either races, which is unexpected. Perhaps there is a mistake
+		in the model?
+	\item For the medium-sized model, it seems that permuting the race
+		makes it much more likely to thing that Blacks earn less. This
+		is suprising as when no fairness action, neither race had a
+		very strong advantage or preference.
+\end{itemize}
+
+\end{document}
+

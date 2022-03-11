@@ -1,0 +1,41 @@
+size,action,metric,r1,r2,value
+Small,None,Advantage,Black,White,0.29295639022667985
+Small,None,Preference,Black,White,0.38672860863640807
+Small,None,Advantage,White,Black,-5.551115123125783e-17
+Small,None,Preference,White,Black,-0.38672860863640807
+Small,Race Permute,Advantage,Black,White,-1.6653345369377348e-16
+Small,Race Permute,Preference,Black,White,-0.11499980549237837
+Small,Race Permute,Advantage,White,Black,0.1786787719952201
+Small,Race Permute,Preference,White,Black,0.11499980549237837
+Small,Sex Permute,Advantage,Black,White,0.29295639022667985
+Small,Sex Permute,Preference,Black,White,0.38672860863640807
+Small,Sex Permute,Advantage,White,Black,-5.551115123125783e-17
+Small,Sex Permute,Preference,White,Black,-0.38672860863640807
+Small,Both Permute,Advantage,Black,White,0.27036291074805385
+Small,Both Permute,Preference,Black,White,0.3667925016667296
+Small,Both Permute,Advantage,White,Black,0.0
+Small,Both Permute,Preference,White,Black,-0.3667925016667296
+Small,Random Weight,Advantage,Black,White,0.29295639022667985
+Small,Random Weight,Preference,Black,White,0.38672860863640807
+Small,Random Weight,Advantage,White,Black,-5.551115123125783e-17
+Small,Random Weight,Preference,White,Black,-0.38672860863640807
+Medium,None,Advantage,Black,White,0.014156232636666322
+Medium,None,Preference,Black,White,0.0535284236868403
+Medium,None,Advantage,White,Black,0.06260888148078181
+Medium,None,Preference,White,Black,-0.0535284236868403
+Medium,Race Permute,Advantage,Black,White,0.2060602914987174
+Medium,Race Permute,Preference,Black,White,0.2694219449410969
+Medium,Race Permute,Advantage,White,Black,0.0028165280955853023
+Medium,Race Permute,Preference,White,Black,-0.2694219449410969
+Medium,Sex Permute,Advantage,Black,White,0.014156232636666322
+Medium,Sex Permute,Preference,Black,White,0.0535284236868403
+Medium,Sex Permute,Advantage,White,Black,0.06260888148078181
+Medium,Sex Permute,Preference,White,Black,-0.0535284236868403
+Medium,Both Permute,Advantage,Black,White,0.022981088918431092
+Medium,Both Permute,Preference,Black,White,0.08571866781909715
+Medium,Both Permute,Advantage,White,Black,0.014528389303582967
+Medium,Both Permute,Preference,White,Black,-0.08571866781909715
+Medium,Random Weight,Advantage,Black,White,0.014156232636666322
+Medium,Random Weight,Preference,Black,White,0.0535284236868403
+Medium,Random Weight,Advantage,White,Black,0.06260888148078181
+Medium,Random Weight,Preference,White,Black,-0.0535284236868403

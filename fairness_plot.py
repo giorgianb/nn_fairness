@@ -27,6 +27,7 @@ import pickle
 import tqdm
 from scipy.sparse import csr_matrix
 from itertools import product
+import csv
 
 INTEGRATION = 'block-qhull'
 
@@ -170,7 +171,7 @@ def make_distribution(data):
 class ProbabilityDensityComputer:
     """computes probability of input at given point"""
 
-    def __init__(self):
+    def __init__(self, given=lambda x: True):
         cache_path = 'NN-verification/cache'
         random_seed = 0
         cache_file_path = os.path.join(cache_path, f'np-adult-data-rs={random_seed}.pkl')
@@ -178,6 +179,8 @@ class ProbabilityDensityComputer:
             data_dict = pickle.load(f)
 
         X_train = data_dict["X_train"]
+        matches_given = np.apply_along_axis(given, 1, X_train)
+        X_train = X_train[matches_given]
 
         self.ages  = make_distribution(X_train[:, 0])
         self.edu_number  = make_distribution(X_train[:, 1])
@@ -247,19 +250,17 @@ def main():
 
     # output interpretation: is_greater_than_50K: Binary indictor
 
-
-    networks = [("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", "Seed 0")]#,
     networks = [
-            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", "(Small) No Permute"),
-            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=True-sex_permute=False-both_sex_race_permute=False/model.onnx", "(Small) Race Permute"),
-            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=True-both_sex_race_permute=False/model.onnx", "(Small) Sex Permute"), 
-            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=True/model.onnx", "(Small) Race & Sex Permute"), 
-            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-True-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", "(Small) Random Weight"),
-            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", "(Medium) No Permute"),
-            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=True-sex_permute=False-both_sex_race_permute=False/model.onnx", "(Medium) Race Permute"),
-            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=True-both_sex_race_permute=False/model.onnx", "(Medium) Sex Permute"),
-            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=True/model.onnx", "(Medium) Race & Sex Permute"),
-            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-True-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", "(Medium) Random Weight"),
+            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", ("Small", "None")),
+            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=True-sex_permute=False-both_sex_race_permute=False/model.onnx", ("Small", "Race Permute")),
+            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=True-both_sex_race_permute=False/model.onnx", ("Small", "Sex Permute")), 
+            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=True/model.onnx", ("Small", "Both Permute")), 
+            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-True-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", ("Small", "Random Weight")),
+            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx",("Medium", "None")),
+            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=True-sex_permute=False-both_sex_race_permute=False/model.onnx",("Medium", "Race Permute")),
+            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=True-both_sex_race_permute=False/model.onnx",("Medium", "Sex Permute")),
+            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=True/model.onnx",("Medium", "Both Permute")),
+            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-True-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx",("Medium", "Random Weight")),
     ]
 
     # ideas:
@@ -270,115 +271,167 @@ def main():
     # symmetric difference = area1 + area2 - 2*area of intersection
     # area of intersection can be optimized using zonotope box bounds
 
-    prob_density = ProbabilityDensityComputer()
+    def is_aam(x):
+        return x[3] == 1 and x[5] == 1
 
+    def is_wm(x):
+        return x[3] == 1 and x[4] == 1
+
+    def is_apim(x):
+        return x[3] == 1 and x[5] == 1
+
+    def is_aiem(x):
+        return x[3] == 1 and x[6] == 1
+
+    aam_prob = ProbabilityDensityComputer(is_aam)
+    wm_prob = ProbabilityDensityComputer(is_wm)
+    apim_prob = ProbabilityDensityComputer(is_apim)
+    aiem_prob = ProbabilityDensityComputer(is_aiem)
+    aam_box = [
+            [0.0, 1.0], # age
+            [0.0, 1.0], # edu_num
+            [1.0, 1.0], # hours_per_week
+            [1.0, 1.0], # is_male
+            [0.0, 0.0], # race_white
+            [1.0, 1.0], # race_black
+            [0.0, 0.0], # race_asian_pac_islander
+            [0.0, 0.0], # race_american_indian_eskimo
+            [0.0, 0.0], # race_other
+    ]
+
+    wm_box = [
+            [0.0, 1.0], # age
+            [0.0, 1.0], # edu_num
+            [1.0, 1.0], # hours_per_week
+            [1.0, 1.0], # is_male
+            [1.0, 1.0], # race_white
+            [0.0, 0.0], # race_black
+            [0.0, 0.0], # race_asian_pac_islander
+            [0.0, 0.0], # race_american_indian_eskimo
+            [0.0, 0.0], # race_other
+    ]
+
+    apim_box = [
+            [0.0, 1.0], # age
+            [0.0, 1.0], # edu_num
+            [1.0, 1.0], # hours_per_week
+            [1.0, 1.0], # is_male
+            [0.0, 0.0], # race_white
+            [0.0, 0.0], # race_black
+            [1.0, 1.0], # race_asian_pac_islander
+            [0.0, 0.0], # race_american_indian_eskimo
+            [0.0, 0.0], # race_other
+    ]
+
+    aiem_box = [
+            [0.0, 1.0], # age
+            [0.0, 1.0], # edu_num
+            [1.0, 1.0], # hours_per_week
+            [1.0, 1.0], # is_male
+            [0.0, 0.0], # race_white
+            [0.0, 0.0], # race_black
+            [0.0, 0.0], # race_asian_pac_islander
+            [1.0, 1.0], # race_american_indian_eskimo
+            [0.0, 0.0], # race_other
+    ]
+
+    aaf_box = [
+            [0.0, 1.0], # age
+            [0.0, 1.0], # edu_num
+            [0.0, 1.0], # hours_per_week
+            [0.0, 0.0], # is_male
+            [0.0, 0.0], # race_white
+            [1.0, 1.0], # race_black
+            [0.0, 0.0], # race_asian_pac_islander
+            [0.0, 0.0], # race_american_indian_eskimo
+            [0.0, 0.0], # race_other
+    ]
+
+    wf_box = [
+            [0.0, 1.0], # age
+            [0.0, 1.0], # edu_num
+            [0.0, 1.0], # hours_per_week
+            [0.0, 0.0], # is_male
+            [1.0, 1.0], # race_white
+            [0.0, 0.0], # race_black
+            [0.0, 0.0], # race_asian_pac_islander
+            [0.0, 0.0], # race_american_indian_eskimo
+            [0.0, 0.0], # race_other
+    ]
+
+
+    rows = [('size', 'action', 'metric', 'r1', 'r2', 'value')]
     for onnx_filename, network_label in networks:
         network = load_onnx_network_optimized(onnx_filename)
 
-        aam_box = [
-                [0.0, 1.0], # age
-                [0.0, 1.0], # edu_num
-                [1.0, 1.0], # hours_per_week
-                [1.0, 1.0], # is_male
-                [0.0, 0.0], # race_white
-                [1.0, 1.0], # race_black
-                [0.0, 0.0], # race_asian_pac_islander
-                [0.0, 0.0], # race_american_indian_eskimo
-                [0.0, 0.0], # race_other
-        ]
-
-        wm_box = [
-                [0.0, 1.0], # age
-                [0.0, 1.0], # edu_num
-                [1.0, 1.0], # hours_per_week
-                [1.0, 1.0], # is_male
-                [1.0, 1.0], # race_white
-                [0.0, 0.0], # race_black
-                [0.0, 0.0], # race_asian_pac_islander
-                [0.0, 0.0], # race_american_indian_eskimo
-                [0.0, 0.0], # race_other
-        ]
-
-        aaf_box = [
-                [0.0, 1.0], # age
-                [0.0, 1.0], # edu_num
-                [0.0, 1.0], # hours_per_week
-                [0.0, 0.0], # is_male
-                [0.0, 0.0], # race_white
-                [1.0, 1.0], # race_black
-                [0.0, 0.0], # race_asian_pac_islander
-                [0.0, 0.0], # race_american_indian_eskimo
-                [0.0, 0.0], # race_other
-        ]
-
-        wf_box = [
-                [0.0, 1.0], # age
-                [0.0, 1.0], # edu_num
-                [0.0, 1.0], # hours_per_week
-                [0.0, 0.0], # is_male
-                [1.0, 1.0], # race_white
-                [0.0, 0.0], # race_black
-                [0.0, 0.0], # race_asian_pac_islander
-                [0.0, 0.0], # race_american_indian_eskimo
-                [0.0, 0.0], # race_other
-        ]
-
-        male_inits = [aam_box, wm_box]
+        male_inits = [aam_box, wm_box]#, apim_box, aiem_box]
         female_inits = [aaf_box, wf_box]
         inits_list = [male_inits] #[male_inits, female_inits]
+        male_probs = [aam_prob, wm_prob]#, apim_prob, aiem_prob]
+        probs_list = [male_probs]
         sex_labels = ['Male'] #['Male', 'Female']
 
-        for inits, sex in zip(inits_list, sex_labels):
-            lpi_polys = [[], []]
-            labels = ['Low Risk African American', 'Low Risk White', 'Union'] 
+        # Here, we calculate the intersection
+        for inits, probs, sex in zip(inits_list, probs_list, sex_labels):
+            lpi_polys = []
+            labels = ['Black', 'White', 'Asiatic', 'Native American'] 
+            total_probabilities = []
 
-            for i, init in enumerate(inits + [None]):
+            for i, (init, prob) in enumerate(zip(inits, probs)):
+                lpi_polys.append([])
+
+                init_box = np.array(init, dtype=np.float32)
+
+                res = enumerate_network(init_box, network)
+                result_str = res.result_str
+                assert result_str == "none"
+
+                print(f"[{network_label}] {labels[i]} split into {len(res.stars)} polys")
+
+                for star in tqdm.tqdm(res.stars):
+                    # add constaint that output < 0 (low risk)
+                    assert star.a_mat.shape[0] == 1, "single output should mean single row"
+                    row = star.a_mat[0]
+                    bias = star.bias[0]
+
+                    star.lpi.add_dense_row(row, -bias)
+                    #star.lpi.add_dense_row(-2*row, -bias - 1)
+
+                    if star.lpi.is_feasible():
+                        lpi_polys[i].append(star.lpi)
+
+
+
+            print(f"[{network_label}] lp_polys size: {tuple(len(poly) for poly in lpi_polys)}") 
+            for label_0, polys_0, prob_0 in zip(labels, lpi_polys, probs):
                 total_probability = 0
+                for lpi in polys_0:
+                    total_probability += integrate(lpi, prob_0)
 
-                if i < 2:
-                    init_box = np.array(init, dtype=np.float32)
+                for label_1, polys_1, prob_1 in zip(labels, lpi_polys, probs):
+                    if label_0 == label_1:
+                        continue
 
-                    res = enumerate_network(init_box, network)
-                    result_str = res.result_str
-                    assert result_str == "none"
+                    pref_prob = 0
+                    for lpi in polys_1:
+                        pref_prob += integrate(lpi, prob_1)
 
-                    print(f"[{network_label}] {labels[i]} split into {len(res.stars)} polys")
-
-                    for star in tqdm.tqdm(res.stars):
-                        # add constaint that output < 0 (low risk)
-                        assert star.a_mat.shape[0] == 1, "single output should mean single row"
-                        row = star.a_mat[0]
-                        bias = star.bias[0]
-
-                        star.lpi.add_dense_row(row, -bias)
-
-                        if star.lpi.is_feasible():
-                            # get verts in input space
-
-                            lpi_polys[i].append(star.lpi)
-
-                            #prob_density.sample       
-                            total_probability += integrate(star.lpi, prob_density)
-
-                            #supp_pt_func = lambda vec: star.lpi.minimize(-vec)
-
-                            #verts = kamenev.get_verts(2, supp_pt_func)
-
-                else:
-                    print(f"[{network_label}] lp_polys size: {len(lpi_polys[0]), len(lpi_polys[1])}") 
-                    # compute union of lp_polys
-                    for lpi1, lpi2 in tqdm.tqdm(tuple(product(lpi_polys[0], lpi_polys[1]))):
-                        #intersection_poly = glpk_util.intersect(poly1, poly2)
-
-                        intersection_lpi = compute_intersection_lpi(lpi1, lpi2)
+                    adv_prob = 0
+                    for lpi_0, lpi_1 in tqdm.tqdm(tuple(product(polys_0, polys_1))):
+                        intersection_lpi = compute_intersection_lpi(lpi_0, lpi_1)
 
                         if intersection_lpi.is_feasible():
-                                total_probability += integrate(intersection_lpi, prob_density)
+                            adv_prob += integrate(intersection_lpi, prob_0)
 
+                    rows.append((network_label[0], network_label[1], 'Advantage', label_0, label_1, total_probability - adv_prob))
+                    rows.append((network_label[0], network_label[1], 'Preference', label_0, label_1, total_probability - pref_prob))
 
+                    print(f"[{network_label}] {label_0} advantage over {label_1}: {total_probability - adv_prob}")
+                    print(f"[{network_label}] {label_0} preference over {label_1}: {total_probability - pref_prob}")
 
-                print(f"[{network_label}] {labels[i]} probability: {total_probability}")
-                
+    with open('results.csv', 'w', newline='') as handle:
+        writer = csv.writer(handle)
+        writer.writerows(rows)
 
 
 if __name__ == "__main__":
