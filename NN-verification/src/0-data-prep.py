@@ -4,7 +4,7 @@ import pickle
 from os.path import join as os_join
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
-
+import os
 import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.rcParams['font.family'] = "serif"
@@ -90,6 +90,13 @@ def main(random_seed = 621):
     res_path = '/Users/xingzhiguo/Documents/git_project/NN-verification/results'
     cache_path = '/Users/xingzhiguo/Documents/git_project/NN-verification/cache'
     
+    if os.path.exists(cache_path) is not True:
+        os.makedirs(cache_path)
+    
+    if os.path.exists(res_path) is not True:
+        os.makedirs(res_path)
+
+
     file_path =os_join(data_path, 'compas-scores-two-years-violent.csv')
     df_clean = clean_data(file_path)
 
@@ -128,5 +135,5 @@ def main(random_seed = 621):
     print (f'saved data matrix to {cache_file_path}')
 
 if __name__ == '__main__':
-    for randseed in range(3):
+    for randseed in range(10):
         main(random_seed = randseed)

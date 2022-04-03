@@ -11,6 +11,7 @@ import glpk_util
 from polytope import Polytope, extreme
 from scipy.spatial import ConvexHull
 from icecream import ic
+import cdd
 
 def rand_integrate_polytope(A, b, func_to_integrate=None, samples=100000):
     """use random sampling to integrate a function over a polytope domian
@@ -78,6 +79,16 @@ def quad_integrate_polytope(A, b, func_to_integrate=None):
 
     return rv
 
+def get_A_b_vertices(A, b):
+    assert len(b.shape)==1
+    b_2d = b.reshape((b.shape[0], 1))
+    linsys = cdd.Matrix(np.hstack([b_2d, -A]), number_type='float')
+    linsys.rep_type = cdd.RepType.INEQUALITY
+    P = cdd.Polyhedron(linsys)
+    generators = P.get_generators()
+
+    return np.array(generators)[:,1:]
+
 def qhull_integrate_polytope(A, b, func_to_integrate=None):
     """use scipy.quad to integrate a function over a polytope domain
 
@@ -87,6 +98,7 @@ def qhull_integrate_polytope(A, b, func_to_integrate=None):
     """
     poly = Polytope(A, b)
     vertices = extreme(poly)
+    #vertices = get_A_b_vertices(A, b)
     if vertices is None:
         return 0
 

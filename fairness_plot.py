@@ -28,6 +28,14 @@ import tqdm
 from scipy.sparse import csr_matrix
 from itertools import product
 import csv
+import copy
+import json
+
+from collections import defaultdict
+
+import swiglpk as glpk
+import sys
+from itertools import chain
 
 INTEGRATION = 'block-qhull'
 
@@ -81,18 +89,55 @@ def integrate(lpi, pdf):
         return prob
     elif INTEGRATION == 'block-qhull':
         prob = 0
+
+        A_lpi = lpi.get_constraints_csr().toarray()
+        b_lpi = lpi.get_rhs()
+        lpi_copy = LpInstance(lpi)
+       
         for region in pdf.regions:
             region = np.array(region)
-            A = lpi.get_constraints_csr().toarray()
-            b = lpi.get_rhs()
-            point = []
+
+            A = A_lpi.copy()
+            b = b_lpi.copy()
+            # check if it's feasible before computing volume
             for i, (lbound, ubound) in enumerate(region):
-                point.append((lbound + ubound) / 2)
-                row = np.zeros((1, len(region)))
-                row[0, i] = 1
-                A = np.concatenate((A, row, -row), axis=0)
-                b = np.append(b, (ubound, -lbound))
-            prob += qhull_integrate_polytope(A, b)*pdf.sample(*point)
+                if lbound == ubound:
+                    glpk.glp_set_col_bnds(lpi_copy.lp, i + 1, glpk.GLP_FX, lbound, lbound) # needs: import swiglpk as glpk
+                else:
+                    glpk.glp_set_col_bnds(lpi_copy.lp, i + 1, glpk.GLP_DB, lbound, ubound) # needs: import swiglpk as glpk
+
+            feasible = lpi_copy.is_feasible()
+            if not feasible:
+                continue
+
+            point = []
+            to_eliminate_cols = []
+            to_eliminate_vals = []
+            to_keep_cols = []
+            for i, (lbound, ubound) in enumerate(region):
+                p = lbound if lbound == ubound else (lbound + ubound) / 2
+                point.append(p)
+                if lbound == ubound:
+                    to_eliminate_cols.append(i)
+                    to_eliminate_vals.append(lbound)
+                else:
+                    row = np.zeros((1, len(region)))
+                    row[0, i] = 1
+                    A = np.concatenate((A, row, -row), axis=0)
+                    b = np.append(b, (ubound, -lbound))
+                    to_keep_cols.append(i)
+               
+            p = pdf.sample(*point)
+            if p == 0:
+                continue
+
+            if len(to_eliminate_cols) > 0:
+                to_eliminate_vals = np.array(to_eliminate_vals)
+                b -= A[:, to_eliminate_cols] @ to_eliminate_vals
+                A = A[:, to_keep_cols]
+
+            prob += qhull_integrate_polytope(A, b)*p
+            #prob += quad_integrate_polytope(A, b)*pdf.sample(*point)
 
         return prob
     elif INTEGRATION == 'block-linear':
@@ -161,57 +206,75 @@ def make_linear_interpolation_func(pts):
 
     return f
 
-def make_distribution(data):
+def make_continuous_distribution(data):
     counts, boundaries = np.histogram(data, bins=10)
     centers = (boundaries[1:] + boundaries[:-1])/2
     distribution = np.stack((centers, counts), axis=-1)
 
     return distribution
 
+def make_discrete_distribution(data):
+    dist = defaultdict(int)
+
+    for x in data:
+        dist[x] += 1
+
+    return dist
+
+def make_discrete_func(dist):
+    def func(x):
+        return dist.get(x, 0)
+
+    return func
+
+
+
 class ProbabilityDensityComputer:
     """computes probability of input at given point"""
 
-    def __init__(self, given=lambda x: True):
-        cache_path = 'NN-verification/cache'
-        random_seed = 0
-        cache_file_path = os.path.join(cache_path, f'np-adult-data-rs={random_seed}.pkl')
-        with open(cache_file_path, 'rb') as f:
-            data_dict = pickle.load(f)
+    def __init__(self, X, discrete_indices, continuous_indices, class_filter):
+        matches_given = np.apply_along_axis(class_filter, 1, X)
+        X = X[matches_given]
 
-        X_train = data_dict["X_train"]
-        matches_given = np.apply_along_axis(given, 1, X_train)
-        X_train = X_train[matches_given]
+        self.discrete_indices = tuple(discrete_indices)
+        self.continuous_indices = tuple(continuous_indices)
+        self.continuous = [make_continuous_distribution(X[:, i]) for i in continuous_indices]
+        self.discrete = [make_discrete_distribution(X[:, i]) for i in discrete_indices]
+        self.continuous_funcs = [make_linear_interpolation_func(d) for d in self.continuous]
+        self.discrete_funcs = [make_discrete_func(d) for d in self.discrete]
+        self.continuous_volumes = [quad(f, d[0][0], d[-1][0], limit=500)[0] for f, d in zip(self.continuous_funcs, self.continuous)]
+        self.discrete_volumes = [sum(f(k) for k in d.keys()) for f, d in zip(self.discrete_funcs, self.discrete)]
+        funcs = sorted(
+                chain(
+                    zip(continuous_indices, self.continuous_funcs, self.continuous_volumes),
+                    zip(discrete_indices, self.discrete_funcs, self.discrete_volumes),
+                )
+        )
+        self.funcs = tuple(map(lambda x: (x[1], x[2]), funcs))
+        self.continuous_bounds = [tuple(zip(d[:, 0], d[1:, 0])) for d in self.continuous]
+        self.discrete_bounds = [[(k, k) for k in sorted(d.keys())] for d in self.discrete]
+        regions = sorted(
+                chain(
+                    zip(continuous_indices, self.continuous_bounds),
+                    zip(discrete_indices, self.discrete_bounds)
+                )
+        )
+        self._regions = tuple(map(lambda x: x[1], regions))
 
-        self.ages  = make_distribution(X_train[:, 0])
-        self.edu_number  = make_distribution(X_train[:, 1])
-        self.hours_per_week  = make_distribution(X_train[:, 2])
 
-        self.funcs = [make_linear_interpolation_func(d) for d in [self.ages, self.edu_number, self.hours_per_week]]
-
-        self.volumes = []
-
-        for func, data in zip(self.funcs, [self.ages, self.edu_number, self.hours_per_week]):
-            v = quad(func, data[0][0], data[-1][0], limit=500)[0]
-            self.volumes.append(v)
 
     def sample(self, *args):
         """get probability density at a point"""
 
         p = 1
-        for func, volume, x in zip(self.funcs, self.volumes, args):
-            p *= func(x)/volume
+        for (f, v), x in zip(self.funcs, args):
+            p *= f(x)/v
 
         return p
 
     @property
     def regions(self):
-        age_bounds = zip(self.ages[:, 0], self.ages[1:, 0])
-        edu_bounds = zip(self.edu_number[:, 0], self.edu_number[1:, 0])
-        #jhour_bounds = zip(self.hours_per_week[:, 0], self.hours_per_week[1:, 0])
-
-        return product(age_bounds, edu_bounds)#, hour_bounds)
-
-
+        return product(*self._regions)
 
 
 def compute_intersection_lpi(lpi1, lpi2):
@@ -241,27 +304,6 @@ def main():
     init_plot()
     set_settings()
 
-    # Model Input:  [age, edu_num, hours_per_week, is_male, race_white, race_black, race_asian_pac_islander, race_amer_indian_eskimo, race_other]
-    # age             :       normalized to [0,1], original max: 90 , original min: 17
-    # edu_num         :       normalized to [0,1], original max: 16 , original min: 1
-    # hours_per_week  :       normalized to [0,1], original max: 99 , original min: 1
-    # is_male         : 1.0 means male, 0.0 means female,
-    # race-related:   : mutually exclusive indicator (with either 1.0 or 0.0)
-
-    # output interpretation: is_greater_than_50K: Binary indictor
-
-    networks = [
-            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", ("Small", "None")),
-            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=True-sex_permute=False-both_sex_race_permute=False/model.onnx", ("Small", "Race Permute")),
-            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=True-both_sex_race_permute=False/model.onnx", ("Small", "Sex Permute")), 
-            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=True/model.onnx", ("Small", "Both Permute")), 
-            ("NN-verification/results/adult-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-True-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx", ("Small", "Random Weight")),
-            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx",("Medium", "None")),
-            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=True-sex_permute=False-both_sex_race_permute=False/model.onnx",("Medium", "Race Permute")),
-            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=True-both_sex_race_permute=False/model.onnx",("Medium", "Sex Permute")),
-            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=True/model.onnx",("Medium", "Both Permute")),
-            ("NN-verification/results/adult-model_config-medium-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-True-race_permute=False-sex_permute=False-both_sex_race_permute=False/model.onnx",("Medium", "Random Weight")),
-    ]
 
     # ideas:
     # Initial set defined as star: (triangle), where unused input dimension is the pdf
@@ -270,168 +312,115 @@ def main():
     #
     # symmetric difference = area1 + area2 - 2*area of intersection
     # area of intersection can be optimized using zonotope box bounds
+    with open(sys.argv[1], 'r') as handle:
+        config = json.load(handle)
 
-    def is_aam(x):
-        return x[3] == 1 and x[5] == 1
+    with open(config['train_data_path'], 'rb') as f:
+        data_dict = pickle.load(f)
+        X = data_dict['X_train']
 
-    def is_wm(x):
-        return x[3] == 1 and x[4] == 1
+    c1 = config['class_1']
+    c2 = config['class_2']
+    class_1_indices = np.array(c1['indices'])
+    class_1_values = np.array(c1['values'])
+    class_2_indices = np.array(c2['indices'])
+    class_2_values = np.array(c2['values'])
+    def is_class_1(x):
+        return np.all(x[class_1_indices] == class_1_values)
 
-    def is_apim(x):
-        return x[3] == 1 and x[5] == 1
+    def is_class_2(x):
+        return np.all(x[class_2_indices] == class_2_values)
 
-    def is_aiem(x):
-        return x[3] == 1 and x[6] == 1
+    class_1_prob = ProbabilityDensityComputer(
+            X,
+            config['discrete_indices'],
+            config['continuous_indices'],
+            is_class_1
+    )
 
-    aam_prob = ProbabilityDensityComputer(is_aam)
-    wm_prob = ProbabilityDensityComputer(is_wm)
-    apim_prob = ProbabilityDensityComputer(is_apim)
-    aiem_prob = ProbabilityDensityComputer(is_aiem)
-    aam_box = [
-            [0.0, 1.0], # age
-            [0.0, 1.0], # edu_num
-            [1.0, 1.0], # hours_per_week
-            [1.0, 1.0], # is_male
-            [0.0, 0.0], # race_white
-            [1.0, 1.0], # race_black
-            [0.0, 0.0], # race_asian_pac_islander
-            [0.0, 0.0], # race_american_indian_eskimo
-            [0.0, 0.0], # race_other
-    ]
+    class_2_prob = ProbabilityDensityComputer(
+            X,
+            config['discrete_indices'],
+            config['continuous_indices'],
+            is_class_2
+    )
 
-    wm_box = [
-            [0.0, 1.0], # age
-            [0.0, 1.0], # edu_num
-            [1.0, 1.0], # hours_per_week
-            [1.0, 1.0], # is_male
-            [1.0, 1.0], # race_white
-            [0.0, 0.0], # race_black
-            [0.0, 0.0], # race_asian_pac_islander
-            [0.0, 0.0], # race_american_indian_eskimo
-            [0.0, 0.0], # race_other
-    ]
+    class_1_box = c1['box']
+    class_2_box = c2['box']
 
-    apim_box = [
-            [0.0, 1.0], # age
-            [0.0, 1.0], # edu_num
-            [1.0, 1.0], # hours_per_week
-            [1.0, 1.0], # is_male
-            [0.0, 0.0], # race_white
-            [0.0, 0.0], # race_black
-            [1.0, 1.0], # race_asian_pac_islander
-            [0.0, 0.0], # race_american_indian_eskimo
-            [0.0, 0.0], # race_other
-    ]
-
-    aiem_box = [
-            [0.0, 1.0], # age
-            [0.0, 1.0], # edu_num
-            [1.0, 1.0], # hours_per_week
-            [1.0, 1.0], # is_male
-            [0.0, 0.0], # race_white
-            [0.0, 0.0], # race_black
-            [0.0, 0.0], # race_asian_pac_islander
-            [1.0, 1.0], # race_american_indian_eskimo
-            [0.0, 0.0], # race_other
-    ]
-
-    aaf_box = [
-            [0.0, 1.0], # age
-            [0.0, 1.0], # edu_num
-            [0.0, 1.0], # hours_per_week
-            [0.0, 0.0], # is_male
-            [0.0, 0.0], # race_white
-            [1.0, 1.0], # race_black
-            [0.0, 0.0], # race_asian_pac_islander
-            [0.0, 0.0], # race_american_indian_eskimo
-            [0.0, 0.0], # race_other
-    ]
-
-    wf_box = [
-            [0.0, 1.0], # age
-            [0.0, 1.0], # edu_num
-            [0.0, 1.0], # hours_per_week
-            [0.0, 0.0], # is_male
-            [1.0, 1.0], # race_white
-            [0.0, 0.0], # race_black
-            [0.0, 0.0], # race_asian_pac_islander
-            [0.0, 0.0], # race_american_indian_eskimo
-            [0.0, 0.0], # race_other
-    ]
-
-
-    rows = [('size', 'action', 'metric', 'r1', 'r2', 'value')]
-    for onnx_filename, network_label in networks:
+    # results_dict['model_size']['metric']['fairness_action']
+    results_dict = defaultdict(lambda: defaultdict(dict))
+    for network_label, onnx_filename, auc in config['models']:
         network = load_onnx_network_optimized(onnx_filename)
 
-        male_inits = [aam_box, wm_box]#, apim_box, aiem_box]
-        female_inits = [aaf_box, wf_box]
-        inits_list = [male_inits] #[male_inits, female_inits]
-        male_probs = [aam_prob, wm_prob]#, apim_prob, aiem_prob]
-        probs_list = [male_probs]
-        sex_labels = ['Male'] #['Male', 'Female']
+        inits = [class_1_box, class_2_box] #[male_inits, female_inits]
+        probs = [class_1_prob, class_2_prob]
+        labels = [c1['label'], c2['label']]
 
-        # Here, we calculate the intersection
-        for inits, probs, sex in zip(inits_list, probs_list, sex_labels):
-            lpi_polys = []
-            labels = ['Black', 'White', 'Asiatic', 'Native American'] 
-            total_probabilities = []
+        lpi_polys = []
+        total_probabilities = []
+        for i, (init, prob, label) in enumerate(zip(inits, probs, labels)):
+            lpi_polys.append([])
 
-            for i, (init, prob) in enumerate(zip(inits, probs)):
-                lpi_polys.append([])
+            init_box = np.array(init, dtype=np.float32)
 
-                init_box = np.array(init, dtype=np.float32)
+            res = enumerate_network(init_box, network)
+            result_str = res.result_str
+            assert result_str == "none"
 
-                res = enumerate_network(init_box, network)
-                result_str = res.result_str
-                assert result_str == "none"
+            print(f"[{network_label}] {labels[i]} split into {len(res.stars)} polys")
 
-                print(f"[{network_label}] {labels[i]} split into {len(res.stars)} polys")
+            for star in res.stars:
+                # add constaint that output < 0 (low risk)
+                assert star.a_mat.shape[0] == 1, "single output should mean single row"
+                row = star.a_mat[0]
+                bias = star.bias[0]
 
-                for star in tqdm.tqdm(res.stars):
-                    # add constaint that output < 0 (low risk)
-                    assert star.a_mat.shape[0] == 1, "single output should mean single row"
-                    row = star.a_mat[0]
-                    bias = star.bias[0]
+                star.lpi.add_dense_row(row, -bias)
+                #star.lpi.add_dense_row(-2*row, -bias - 1)
 
-                    star.lpi.add_dense_row(row, -bias)
-                    #star.lpi.add_dense_row(-2*row, -bias - 1)
-
-                    if star.lpi.is_feasible():
-                        lpi_polys[i].append(star.lpi)
+                if star.lpi.is_feasible():
+                    lpi_polys[i].append(star.lpi)
 
 
 
-            print(f"[{network_label}] lp_polys size: {tuple(len(poly) for poly in lpi_polys)}") 
-            for label_0, polys_0, prob_0 in zip(labels, lpi_polys, probs):
-                total_probability = 0
-                for lpi in polys_0:
-                    total_probability += integrate(lpi, prob_0)
+        print(f"[{network_label}] lp_polys size: {tuple(len(poly) for poly in lpi_polys)}") 
+        for label_0, polys_0, prob_0 in zip(labels, lpi_polys, probs):
+            total_probability = 0
+            print(f"[Calculating total probability]")
+            for lpi in tqdm.tqdm(polys_0):
+                total_probability += integrate(lpi, prob_0)
 
-                for label_1, polys_1, prob_1 in zip(labels, lpi_polys, probs):
-                    if label_0 == label_1:
-                        continue
+            print("total probability:", total_probability)
+            for label_1, polys_1, prob_1 in zip(labels, lpi_polys, probs):
+                if label_0 == label_1:
+                    continue
 
-                    pref_prob = 0
-                    for lpi in polys_1:
-                        pref_prob += integrate(lpi, prob_1)
+                pref_prob = 0
+                print(f"[Calculating Preference Probability]")
+                for lpi in tqdm.tqdm(polys_1):
+                    pref_prob += integrate(lpi, prob_1)
+                print("preference probability:", pref_prob)
 
-                    adv_prob = 0
-                    for lpi_0, lpi_1 in tqdm.tqdm(tuple(product(polys_0, polys_1))):
-                        intersection_lpi = compute_intersection_lpi(lpi_0, lpi_1)
+                adv_prob = 0
+                print(f"[Calculating Advantage Probability]")
+                for lpi_0, lpi_1 in tqdm.tqdm(tuple(product(polys_0, polys_1))):
+                    intersection_lpi = compute_intersection_lpi(lpi_0, lpi_1)
 
-                        if intersection_lpi.is_feasible():
-                            adv_prob += integrate(intersection_lpi, prob_0)
+                    if intersection_lpi.is_feasible():
+                        adv_prob += integrate(intersection_lpi, prob_0)
 
-                    rows.append((network_label[0], network_label[1], 'Advantage', label_0, label_1, total_probability - adv_prob))
-                    rows.append((network_label[0], network_label[1], 'Preference', label_0, label_1, total_probability - pref_prob))
+                print("advantage probability:", adv_prob)
+                results_dict[network_label]['Advantage'][f"{label_0},{label_1}"] = total_probability - adv_prob
+                results_dict[network_label]['Preference'][f"{label_0},{label_1}"] = total_probability - pref_prob
 
-                    print(f"[{network_label}] {label_0} advantage over {label_1}: {total_probability - adv_prob}")
-                    print(f"[{network_label}] {label_0} preference over {label_1}: {total_probability - pref_prob}")
+                print(f"[{network_label}] {label_0} advantage over {label_1}: {total_probability - adv_prob}")
+                print(f"[{network_label}] {label_0} preference over {label_1}: {total_probability - pref_prob}")
+        results_dict[network_label]['Symmetric Difference'] = sum(results_dict[network_label]['Advantage'].values())
+        results_dict[network_label]['AUC'] = auc
+        with open(sys.argv[2], 'w') as h:
+            json.dump(results_dict, h)
 
-    with open('results.csv', 'w', newline='') as handle:
-        writer = csv.writer(handle)
-        writer.writerows(rows)
 
 
 if __name__ == "__main__":
