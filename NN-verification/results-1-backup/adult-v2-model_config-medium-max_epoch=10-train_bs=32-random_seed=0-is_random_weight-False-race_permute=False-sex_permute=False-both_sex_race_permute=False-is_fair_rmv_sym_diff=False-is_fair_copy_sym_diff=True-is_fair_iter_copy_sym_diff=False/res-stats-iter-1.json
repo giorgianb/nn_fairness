@@ -1,0 +1,1 @@
+{"train": {"loss_history": [0.47181838750839233]}, "num_train": 31937, "dev": {"loss_history": [0.6085692644119263], "auc_history": [0.540320763885365]}, "test": {"loss_history": [0.6174139380455017], "auc_history": [0.7893649041328816]}}
