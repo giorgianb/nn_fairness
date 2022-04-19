@@ -16,6 +16,7 @@ from nnenum.result import Result
 from nnenum.onnx_network import load_onnx_network_optimized, load_onnx_network
 from nnenum import kamenev
 from nnenum.lpinstance import LpInstance
+from scipy.optimize import linprog
 
 import glpk_util
 from compute_volume import quad_integrate_glpk_lp, rand_integrate_polytope, quad_integrate_polytope, qhull_integrate_polytope
@@ -36,6 +37,7 @@ from collections import defaultdict
 import swiglpk as glpk
 import sys
 from itertools import chain
+from joblib import Parallel, delayed
 
 INTEGRATION = 'block-qhull'
 
@@ -298,23 +300,24 @@ def compute_intersection_lpi(lpi1, lpi2):
 
     return rv
 
-def main():
-    """main entry point"""
+def get_bounding_box(lpi):
+    bb = []
+    A = lpi.get_constraints_csr().toarray()
+    b = lpi.get_rhs()
+    for i in range(A.shape[1]):
+        v = np.zeros(A.shape[1])
+        v[i] = 1
+        min_bound = lpi.minimize(v)[i]
+        max_bound = lpi.minimize(-v)[i]
+        bb.append((min_bound, max_bound))
 
-    init_plot()
+    return np.array(bb)
+
+def bounding_boxes_overlap(bb0, bb1):
+    return not (np.any(bb0[1, :] < bb1[0, :]) or np.any(bb1[1, :] < bb0[0, :]))
+
+def run_on_model(config, model_index):
     set_settings()
-
-
-    # ideas:
-    # Initial set defined as star: (triangle), where unused input dimension is the pdf
-    #
-    # then, to integrate you just compute the area at the end
-    #
-    # symmetric difference = area1 + area2 - 2*area of intersection
-    # area of intersection can be optimized using zonotope box bounds
-    with open(sys.argv[1], 'r') as handle:
-        config = json.load(handle)
-
     with open(config['train_data_path'], 'rb') as f:
         data_dict = pickle.load(f)
         X = data_dict['X_train']
@@ -350,45 +353,47 @@ def main():
 
     # results_dict['model_size']['metric']['fairness_action']
     results_dict = defaultdict(lambda: defaultdict(dict))
-    for network_label, onnx_filename, auc in config['models']:
-        network = load_onnx_network_optimized(onnx_filename)
+    network_label, onnx_filename, auc = config['models'][model_index]
+    network = load_onnx_network_optimized(onnx_filename)
 
-        inits = [class_1_box, class_2_box] #[male_inits, female_inits]
-        probs = [class_1_prob, class_2_prob]
-        labels = [c1['label'], c2['label']]
+    inits = [class_1_box, class_2_box] #[male_inits, female_inits]
+    probs = [class_1_prob, class_2_prob]
+    labels = [c1['label'], c2['label']]
 
-        lpi_polys = []
-        total_probabilities = []
-        for i, (init, prob, label) in enumerate(zip(inits, probs, labels)):
-            lpi_polys.append([])
+    lpi_polys = []
+    total_probabilities = []
+    for i, (init, prob, label) in enumerate(zip(inits, probs, labels)):
+        lpi_polys.append([])
 
-            init_box = np.array(init, dtype=np.float32)
+        init_box = np.array(init, dtype=np.float32)
 
-            res = enumerate_network(init_box, network)
-            result_str = res.result_str
-            assert result_str == "none"
+        res = enumerate_network(init_box, network)
+        result_str = res.result_str
+        assert result_str == "none"
 
-            print(f"[{network_label}] {labels[i]} split into {len(res.stars)} polys")
+        print(f"[{(network_label, model_index)}] {labels[i]} split into {len(res.stars)} polys")
 
-            for star in res.stars:
-                # add constaint that output < 0 (low risk)
-                assert star.a_mat.shape[0] == 1, "single output should mean single row"
-                row = star.a_mat[0]
-                bias = star.bias[0]
+        for star in res.stars:
+            # add constaint that output < 0 (low risk)
+            assert star.a_mat.shape[0] == 1, "single output should mean single row"
+            row = star.a_mat[0]
+            bias = star.bias[0]
 
-                star.lpi.add_dense_row(row, -bias)
-                #star.lpi.add_dense_row(-2*row, -bias - 1)
+            star.lpi.add_dense_row(row, -bias)
+            #star.lpi.add_dense_row(-2*row, -bias - 1)
 
-                if star.lpi.is_feasible():
-                    lpi_polys[i].append(star.lpi)
+            if star.lpi.is_feasible():
+                bounding_box = get_bounding_box(star.lpi)
+                lpi_polys[i].append((star.lpi, bounding_box))
 
 
 
-        print(f"[{network_label}] lp_polys size: {tuple(len(poly) for poly in lpi_polys)}") 
+    print(f"[{(network_label, model_index)}] lp_polys size: {tuple(len(poly) for poly in lpi_polys)}") 
+    try:
         for label_0, polys_0, prob_0 in zip(labels, lpi_polys, probs):
             total_probability = 0
             print(f"[Calculating total probability]")
-            for lpi in tqdm.tqdm(polys_0):
+            for lpi, bounding_box in tqdm.tqdm(polys_0):
                 total_probability += integrate(lpi, prob_0)
 
             print("total probability:", total_probability)
@@ -398,13 +403,17 @@ def main():
 
                 pref_prob = 0
                 print(f"[Calculating Preference Probability]")
-                for lpi in tqdm.tqdm(polys_1):
+                for lpi, bounding_box in tqdm.tqdm(polys_1):
                     pref_prob += integrate(lpi, prob_1)
                 print("preference probability:", pref_prob)
 
                 adv_prob = 0
                 print(f"[Calculating Advantage Probability]")
-                for lpi_0, lpi_1 in tqdm.tqdm(tuple(product(polys_0, polys_1))):
+                for (lpi_0, bb_0), (lpi_1, bb_1) in tqdm.tqdm(tuple(product(polys_0, polys_1))):
+                    if not bounding_boxes_overlap(bb_0, bb_1):
+                        pass
+                        #continue
+
                     intersection_lpi = compute_intersection_lpi(lpi_0, lpi_1)
 
                     if intersection_lpi.is_feasible():
@@ -414,13 +423,45 @@ def main():
                 results_dict[network_label]['Advantage'][f"{label_0},{label_1}"] = total_probability - adv_prob
                 results_dict[network_label]['Preference'][f"{label_0},{label_1}"] = total_probability - pref_prob
 
-                print(f"[{network_label}] {label_0} advantage over {label_1}: {total_probability - adv_prob}")
-                print(f"[{network_label}] {label_0} preference over {label_1}: {total_probability - pref_prob}")
+                print(f"[{(model_index, network_label)}] {label_0} advantage over {label_1}: {total_probability - adv_prob}")
+                print(f"[{(model_index, network_label)}] {label_0} preference over {label_1}: {total_probability - pref_prob}")
         results_dict[network_label]['Symmetric Difference'] = sum(results_dict[network_label]['Advantage'].values())
         results_dict[network_label]['AUC'] = auc
-        with open(sys.argv[2], 'w') as h:
-            json.dump(results_dict, h)
+    except Exception:
+        pass
 
+    return results_dict
+
+
+
+
+def main():
+    """main entry point"""
+
+    init_plot()
+
+
+    # ideas:
+    # Initial set defined as star: (triangle), where unused input dimension is the pdf
+    #
+    # then, to integrate you just compute the area at the end
+    #
+    # symmetric difference = area1 + area2 - 2*area of intersection
+    # area of intersection can be optimized using zonotope box bounds
+    with open(sys.argv[1], 'r') as handle:
+        config = json.load(handle)
+
+
+    n_models = len(config['models'])
+    results = Parallel(n_jobs=16)(delayed(run_on_model)(config, i) for i in range(n_models))
+
+    results_dict = {}
+    for result in results:
+        for k, v in result.items():
+            results_dict[k] = v
+
+    with open(sys.argv[2], 'w') as handle:
+        json.dump(results_dict, handle)
 
 
 if __name__ == "__main__":

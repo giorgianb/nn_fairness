@@ -11,7 +11,7 @@ import glpk_util
 from polytope import Polytope, extreme
 from scipy.spatial import ConvexHull
 from icecream import ic
-import cdd
+#import cdd
 
 def rand_integrate_polytope(A, b, func_to_integrate=None, samples=100000):
     """use random sampling to integrate a function over a polytope domian
@@ -96,9 +96,12 @@ def qhull_integrate_polytope(A, b, func_to_integrate=None):
 
     if func_to_integrate is None, assumes function is 1 everywhere (returns volume)
     """
-    poly = Polytope(A, b)
-    vertices = extreme(poly)
-    #vertices = get_A_b_vertices(A, b)
+    try:
+        vertices = get_A_b_vertices(A, b)
+    except Exception:
+        poly = Polytope(A, b)
+        vertices = extreme(poly)
+
     if vertices is None:
         return 0
 
