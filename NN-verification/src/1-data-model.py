@@ -40,6 +40,31 @@ class SimpleNet(nn.Module):
         y_pred = self.forward(X).ravel()
         return self.criterion(y_pred, y), y_pred
 
+class SimpleNet_4_8(nn.Module):
+    def __init__(self, input_dim):
+        super(SimpleNet_4_8, self).__init__()
+        self.fc1 = nn.Linear(input_dim, 8)
+        self.fc2 = nn.Linear(8, 8)
+        self.fc3 = nn.Linear(8, 8)
+        self.fc4 = nn.Linear(8, 8)
+        self.out = nn.Linear(8, 1)
+        self.criterion = torch.nn.BCEWithLogitsLoss()
+        # init weights ?
+
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = F.relu(self.fc3(x))
+        x = F.relu(self.fc4(x))
+        x = self.out(x) # raw digits
+        return x
+    
+    def loss(self, X, y):
+        y_pred = self.forward(X).ravel()
+        return self.criterion(y_pred, y), y_pred
+
+
+
 class SimpleDataset(torch.utils.data.Dataset):
     def __init__(self, X, y):
         self.X = X
