@@ -258,6 +258,7 @@ def main_based_on_sym_diff(random_seed, is_race_permute, is_sex_permute, is_sex_
     lr = 0.01
     K = 20
     flip_index = 4 #index for race_white_black_feat
+    print ("flip_feature_index=",4)
     # iteration
     model = None # need to init model
     for _ in range(K):
@@ -363,6 +364,7 @@ def train_loop(RS, train_dataset, dev_dataset, test_dataset, max_epoch, train_bs
         print ('random weights')
         return model, {}, {},{}
 
+    early_stopping = 3 # train at least 3 epochs.
     # let' use adam 
     optimizer = optim.Adam(model.parameters(), lr=lr)
     model.to(device)
@@ -382,7 +384,7 @@ def train_loop(RS, train_dataset, dev_dataset, test_dataset, max_epoch, train_bs
         print (f'epoch: {epoch} \t dev-loss: {dev_mean_loss} \t dev-auc: {dev_auc}')
 
         # early stop s
-        if len(dev_loss_history)>0 and dev_mean_loss>dev_loss_history[-1]: 
+        if len(dev_loss_history)>0 and dev_mean_loss>dev_loss_history[-1] and epoch > early_stopping: 
             print ("early break")
             break
         else:
@@ -532,7 +534,7 @@ def model_save_iter(model, path, train_stats, dev_stats, test_stats, input_shape
 if __name__ == '__main__':
     # training 
     
-    model_configs = ['small', 'medium'] 
+    model_configs = ['small', 'medium']  #['medium'] 
     num_random_seed = 5
     
     
