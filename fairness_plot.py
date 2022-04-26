@@ -289,7 +289,7 @@ class ProbabilityDensityComputer:
         for func, volume, index in zip(self.discrete_funcs, self.discrete_volumes, self.discrete_indices):
             p *= func(x[index])/volume
 
-        for func, index_group in zip(self.one_hot_funcs, self.one_hot_volumes, self.one_hot_indices):
+        for func, volume, index_group in zip(self.one_hot_funcs, self.one_hot_volumes, self.one_hot_indices):
             p *= func(x[index_group])/volume
 
         return p
