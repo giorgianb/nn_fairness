@@ -65,98 +65,86 @@ def init_plot():
     #matplotlib.use('TkAgg') # set backend
     plt.style.use(['bmh', 'bak_matplotlib.mlpstyle'])
 
-def integrate(lpi, pdf):
-    global INTEGRATION
-    if INTEGRATION == 'random':
-        A = lpi.get_constraints_csr().toarray()
-        b = lpi.get_rhs()
-        return rand_integrate_polytope(A, b, func_to_integrate=pdf.sample, samples=100000)
-    elif INTEGRATION == 'quad':
-        return quad_integrate_glpk_lp(lpi.lp, pdf.sample)
-    elif INTEGRATION == 'block':
-        prob = 0
-        for region in pdf.regions:
-            region = np.array(region)
-            A = lpi.get_constraints_csr().toarray()
-            b = lpi.get_rhs()
-            point = []
-            for i, (lbound, ubound) in enumerate(region):
-                point.append((lbound + ubound) / 2)
-                row = np.zeros((1, len(region)))
-                row[0, i] = 1
-                A = np.concatenate((A, row, -row), axis=0)
-                b = np.append(b, (ubound, -lbound))
-            prob += quad_integrate_polytope(A, b)*pdf.sample(*point)
+def integrate(lpi, pdf, fixed_indices):
+    prob = 0
 
-        return prob
-    elif INTEGRATION == 'block-qhull':
-        prob = 0
+    A_lpi = lpi.get_constraints_csr().toarray()
+    b_lpi = lpi.get_rhs()
+    lpi_copy = LpInstance(lpi)
+   
+    for region in pdf.regions:
+        A = A_lpi.copy()
+        b = b_lpi.copy()
+        # check if it's feasible before computing volume
+        col_index = 0
+        A_col_index = 0
+        for (lbound, ubound) in region:
+            if lbound == ubound and type(lbound) != tuple:
+                glpk.glp_set_col_bnds(lpi_copy.lp, A_col_index + 1, glpk.GLP_FX, lbound, lbound) # needs: import swiglpk as glpk
+                A_col_index += (col_index not in fixed_indices)
+                col_index += 1
+            # Handle one-hot type
+            elif type(lbound) == tuple:
+                for val in lbound:
+                    glpk.glp_set_col_bnds(lpi_copy.lp, A_col_index + 1, glpk.GLP_FX, val, val) # needs: import swiglpk as glpk
+                    A_col_index += (col_index not in fixed_indices)
+                    col_index += 1
+            else:
+                glpk.glp_set_col_bnds(lpi_copy.lp, A_col_index + 1, glpk.GLP_DB, lbound, ubound) # needs: import swiglpk as glpk
+                A_col_index += (col_index not in fixed_indices)
+                col_index += 1
 
-        A_lpi = lpi.get_constraints_csr().toarray()
-        b_lpi = lpi.get_rhs()
-        lpi_copy = LpInstance(lpi)
-       
-        for region in pdf.regions:
-            region = np.array(region)
+        feasible = lpi_copy.is_feasible()
+        if not feasible:
+            continue
 
-            A = A_lpi.copy()
-            b = b_lpi.copy()
-            # check if it's feasible before computing volume
-            for i, (lbound, ubound) in enumerate(region):
-                if lbound == ubound:
-                    glpk.glp_set_col_bnds(lpi_copy.lp, i + 1, glpk.GLP_FX, lbound, lbound) # needs: import swiglpk as glpk
-                else:
-                    glpk.glp_set_col_bnds(lpi_copy.lp, i + 1, glpk.GLP_DB, lbound, ubound) # needs: import swiglpk as glpk
-
-            feasible = lpi_copy.is_feasible()
-            if not feasible:
-                continue
-
-            point = []
-            to_eliminate_cols = []
-            to_eliminate_vals = []
-            to_keep_cols = []
-            for i, (lbound, ubound) in enumerate(region):
-                p = lbound if lbound == ubound else (lbound + ubound) / 2
-                point.append(p)
-                if lbound == ubound:
-                    to_eliminate_cols.append(i)
+        point = []
+        to_eliminate_cols = []
+        to_eliminate_vals = []
+        to_keep_cols = []
+        col_index = 0
+        A_col_index = 0
+        for i, (lbound, ubound) in enumerate(region):
+            p = lbound if lbound == ubound else (lbound + ubound) / 2
+            if lbound == ubound and type(p) != tuple:
+                if col_index not in fixed_indices:
+                    to_eliminate_cols.append(A_col_index)
                     to_eliminate_vals.append(lbound)
-                else:
-                    row = np.zeros((1, len(region)))
-                    row[0, i] = 1
-                    A = np.concatenate((A, row, -row), axis=0)
-                    b = np.append(b, (ubound, -lbound))
-                    to_keep_cols.append(i)
-               
-            p = pdf.sample(*point)
-            if p == 0:
-                continue
-
-            if len(to_eliminate_cols) > 0:
-                to_eliminate_vals = np.array(to_eliminate_vals)
-                b -= A[:, to_eliminate_cols] @ to_eliminate_vals
-                A = A[:, to_keep_cols]
-
-            prob += qhull_integrate_polytope(A, b)*p
-            #prob += quad_integrate_polytope(A, b)*pdf.sample(*point)
-
-        return prob
-    elif INTEGRATION == 'block-linear':
-        prob = 0
-        for region in pdf.regions:
-            region = np.array(region)
-            A = lpi.get_constraints_csr().toarray()
-            b = lpi.get_rhs()
-            for i, (lbound, ubound) in enumerate(region):
-                row = np.zeros((1, len(region)))
-                row[0, i] = 1
+                    A_col_index += 1
+                col_index += 1
+                point.append(p)
+            elif type(p) == tuple:
+                for val in p:
+                    if col_index not in fixed_indices:
+                        to_eliminate_cols.append(A_col_index)
+                        to_eliminate_vals.append(val)
+                        A_col_index += 1
+                    col_index += 1
+                point.extend(p)
+            else:
+                row = np.zeros((1, A.shape[1]))
+                row[0, A_col_index] = 1
                 A = np.concatenate((A, row, -row), axis=0)
                 b = np.append(b, (ubound, -lbound))
-            prob += quad_integrate_polytope(A, b, pdf.sample)
+                if col_index not in fixed_indices:
+                    to_keep_cols.append(A_col_index)
+                    A_col_index += 1
+                col_index += 1
+                point.append(p)
 
-        return prob
+        p = pdf.sample(*point)
+        if p == 0:
+            continue
 
+        if len(to_eliminate_cols) > 0:
+            to_eliminate_vals = np.array(to_eliminate_vals)
+            b -= A[:, to_eliminate_cols] @ to_eliminate_vals
+            A = A[:, to_keep_cols]
+
+        prob += qhull_integrate_polytope(A, b)*p
+        #prob += quad_integrate_polytope(A, b)*pdf.sample(*point)
+
+    return prob
 
 
 def make_linear_interpolation_func(pts):
@@ -223,54 +211,84 @@ def make_discrete_distribution(data):
 
     return dist
 
+def make_one_hot_distribution(data):
+    dist = defaultdict(int)
+
+    for x in data:
+        hot_index = np.argmax(x == 1)
+        dist[hot_index] += 1
+
+    return dist
+
+
 def make_discrete_func(dist):
     def func(x):
         return dist.get(x, 0)
 
     return func
 
+def make_one_hot_func(dist):
+    def func(x):
+        hot_index = np.argmax(x == 1)
+        return dist.get(hot_index, 0)
+
+    return func
+
+def one_hot(hot_index, length):
+    h = [0]*length
+    h[hot_index] = 1
+    return tuple(h)
 
 
 class ProbabilityDensityComputer:
     """computes probability of input at given point"""
 
-    def __init__(self, X, discrete_indices, continuous_indices, class_filter):
+    def __init__(self, X, discrete_indices, continuous_indices, one_hot_indices, class_filter):
+        # Assumption: One-Hot indices are contiguous in the array for a one-hot feature
         matches_given = np.apply_along_axis(class_filter, 1, X)
         X = X[matches_given]
 
         self.discrete_indices = tuple(discrete_indices)
         self.continuous_indices = tuple(continuous_indices)
+        self.one_hot_indices = tuple(one_hot_indices)
         self.continuous = [make_continuous_distribution(X[:, i]) for i in continuous_indices]
         self.discrete = [make_discrete_distribution(X[:, i]) for i in discrete_indices]
+        self.one_hot = [make_one_hot_distribution(X[:, index_group]) for index_group in one_hot_indices]
+
         self.continuous_funcs = [make_linear_interpolation_func(d) for d in self.continuous]
         self.discrete_funcs = [make_discrete_func(d) for d in self.discrete]
+        self.one_hot_funcs = [make_one_hot_func(d) for d in self.one_hot]
+
         self.continuous_volumes = [quad(f, d[0][0], d[-1][0], limit=500)[0] for f, d in zip(self.continuous_funcs, self.continuous)]
         self.discrete_volumes = [sum(f(k) for k in d.keys()) for f, d in zip(self.discrete_funcs, self.discrete)]
-        funcs = sorted(
-                chain(
-                    zip(continuous_indices, self.continuous_funcs, self.continuous_volumes),
-                    zip(discrete_indices, self.discrete_funcs, self.discrete_volumes),
-                )
-        )
-        self.funcs = tuple(map(lambda x: (x[1], x[2]), funcs))
+        self.one_hot_volumes = [sum(f(k) for k in d.keys()) for f, d in zip(self.one_hot_funcs, self.one_hot)]
         self.continuous_bounds = [tuple(zip(d[:, 0], d[1:, 0])) for d in self.continuous]
         self.discrete_bounds = [[(k, k) for k in sorted(d.keys())] for d in self.discrete]
+        self.one_hot_bounds = [[(one_hot(k, len(d.keys())), one_hot(k, len(d.keys()))) for k in sorted(d.keys())] for d in self.one_hot]
         regions = sorted(
                 chain(
-                    zip(continuous_indices, self.continuous_bounds),
-                    zip(discrete_indices, self.discrete_bounds)
+                    zip([[k] for k in continuous_indices], self.continuous_bounds),
+                    zip([[k] for k in discrete_indices], self.discrete_bounds),
+                    zip(one_hot_indices, self.one_hot_bounds)
                 )
         )
         self._regions = tuple(map(lambda x: x[1], regions))
-
+        ic(self._regions, len(self._regions))
 
 
     def sample(self, *args):
         """get probability density at a point"""
 
         p = 1
-        for (f, v), x in zip(self.funcs, args):
-            p *= f(x)/v
+        x = np.array(args)
+        for func, index in zip(self.continuous_funcs, self.continuous_indices):
+            p *= func(x[index])
+
+        for func, index in zip(self.discrete_funcs, self.discrete_indices):
+            p *= func(x[index])
+
+        for func, index_group in zip(self.one_hot_funcs, self.one_hot_indices):
+            p *= func(x[index_group])
 
         return p
 
@@ -338,6 +356,7 @@ def run_on_model(config, model_index):
             X,
             config['discrete_indices'],
             config['continuous_indices'],
+            config['one_hot_indices'],
             is_class_1
     )
 
@@ -345,6 +364,7 @@ def run_on_model(config, model_index):
             X,
             config['discrete_indices'],
             config['continuous_indices'],
+            config['one_hot_indices'],
             is_class_2
     )
 
@@ -365,26 +385,29 @@ def run_on_model(config, model_index):
     for i, (init, prob, label) in enumerate(zip(inits, probs, labels)):
         lpi_polys.append([])
 
-        init_box = np.array(init, dtype=np.float32)
 
-        res = enumerate_network(init_box, network)
-        result_str = res.result_str
-        assert result_str == "none"
+        for hot_indices in product(*config['one_hot_indices']):
+            init_box = np.array(init, dtype=np.float32)
+            init_box[list(hot_indices)] = 1
+            ic(init_box)
+            res = enumerate_network(init_box, network)
+            result_str = res.result_str
+            assert result_str == "none"
 
-        print(f"[{(network_label, model_index)}] {labels[i]} split into {len(res.stars)} polys")
+            print(f"[{(network_label, model_index)}] {labels[i]} split into {len(res.stars)} polys")
 
-        for star in res.stars:
-            # add constaint that output < 0 (low risk)
-            assert star.a_mat.shape[0] == 1, "single output should mean single row"
-            row = star.a_mat[0]
-            bias = star.bias[0]
+            for star in res.stars:
+                # add constaint that output < 0 (low risk)
+                assert star.a_mat.shape[0] == 1, "single output should mean single row"
+                row = star.a_mat[0]
+                bias = star.bias[0]
 
-            star.lpi.add_dense_row(row, -bias)
-            #star.lpi.add_dense_row(-2*row, -bias - 1)
+                star.lpi.add_dense_row(row, -bias)
+                #star.lpi.add_dense_row(-2*row, -bias - 1)
 
-            if star.lpi.is_feasible():
-                bounding_box = get_bounding_box(star.lpi)
-                lpi_polys[i].append((star.lpi, bounding_box))
+                if star.lpi.is_feasible():
+                    bounding_box = get_bounding_box(star.lpi)
+                    lpi_polys[i].append((star.lpi, bounding_box))
 
 
 
@@ -394,7 +417,7 @@ def run_on_model(config, model_index):
             total_probability = 0
             print(f"[Calculating total probability]")
             for lpi, bounding_box in tqdm.tqdm(polys_0):
-                total_probability += integrate(lpi, prob_0)
+                total_probability += integrate(lpi, prob_0, config['fixed_indices'])
 
             print("total probability:", total_probability)
             for label_1, polys_1, prob_1 in zip(labels, lpi_polys, probs):
@@ -404,7 +427,7 @@ def run_on_model(config, model_index):
                 pref_prob = 0
                 print(f"[Calculating Preference Probability]")
                 for lpi, bounding_box in tqdm.tqdm(polys_1):
-                    pref_prob += integrate(lpi, prob_1)
+                    pref_prob += integrate(lpi, prob_1, config['fixed_indices'])
                 print("preference probability:", pref_prob)
 
                 adv_prob = 0
@@ -417,7 +440,7 @@ def run_on_model(config, model_index):
                     intersection_lpi = compute_intersection_lpi(lpi_0, lpi_1)
 
                     if intersection_lpi.is_feasible():
-                        adv_prob += integrate(intersection_lpi, prob_0)
+                        adv_prob += integrate(intersection_lpi, prob_0, config['fixed_indices'])
 
                 print("advantage probability:", adv_prob)
                 results_dict[network_label]['Advantage'][f"{label_0},{label_1}"] = total_probability - adv_prob
@@ -428,7 +451,7 @@ def run_on_model(config, model_index):
         results_dict[network_label]['Symmetric Difference'] = sum(results_dict[network_label]['Advantage'].values())
         results_dict[network_label]['AUC'] = auc
     except Exception:
-        pass
+        raise
 
     return results_dict
 
@@ -453,7 +476,8 @@ def main():
 
 
     n_models = len(config['models'])
-    results = Parallel(n_jobs=16)(delayed(run_on_model)(config, i) for i in range(n_models))
+    n_models = 1
+    results = Parallel(n_jobs=1)(delayed(run_on_model)(config, i) for i in range(n_models))
 
     results_dict = {}
     for result in results:
