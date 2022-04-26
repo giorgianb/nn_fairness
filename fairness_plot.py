@@ -452,7 +452,7 @@ def run_on_model(config, model_index):
         results_dict[network_label]['Symmetric Difference'] = sum(results_dict[network_label]['Advantage'].values())
         results_dict[network_label]['AUC'] = auc
     except Exception:
-        raise
+        pass
 
     return results_dict
 
@@ -477,8 +477,7 @@ def main():
 
 
     n_models = len(config['models'])
-    n_models = 1
-    results = Parallel(n_jobs=1)(delayed(run_on_model)(config, i) for i in range(n_models))
+    results = Parallel(n_jobs=16)(delayed(run_on_model)(config, i) for i in range(n_models))
 
     results_dict = {}
     for result in results:
