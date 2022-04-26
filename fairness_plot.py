@@ -283,14 +283,14 @@ class ProbabilityDensityComputer:
 
         p = 1
         x = np.array(args)
-        for func, index in zip(self.continuous_funcs, self.continuous_indices):
-            p *= func(x[index])
+        for func, volume, index in zip(self.continuous_funcs, self.continuous_volumes, self.continuous_indices):
+            p *= func(x[index])/volume
 
-        for func, index in zip(self.discrete_funcs, self.discrete_indices):
-            p *= func(x[index])
+        for func, volume, index in zip(self.discrete_funcs, self.discrete_volumes, self.discrete_indices):
+            p *= func(x[index])/volume
 
-        for func, index_group in zip(self.one_hot_funcs, self.one_hot_indices):
-            p *= func(x[index_group])
+        for func, index_group in zip(self.one_hot_funcs, self.one_hot_volumes, self.one_hot_indices):
+            p *= func(x[index_group])/volume
 
         return p
 
