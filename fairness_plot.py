@@ -80,18 +80,21 @@ def integrate(lpi, pdf, fixed_indices):
         A_col_index = 0
         for (lbound, ubound) in region:
             if lbound == ubound and type(lbound) != tuple:
-                glpk.glp_set_col_bnds(lpi_copy.lp, A_col_index + 1, glpk.GLP_FX, lbound, lbound) # needs: import swiglpk as glpk
-                A_col_index += (col_index not in fixed_indices)
+                if col_index not in fixed_indices:
+                    glpk.glp_set_col_bnds(lpi_copy.lp, A_col_index + 1, glpk.GLP_FX, lbound, lbound) # needs: import swiglpk as glpk
+                    A_col_index += 1
                 col_index += 1
             # Handle one-hot type
             elif type(lbound) == tuple:
                 for val in lbound:
-                    glpk.glp_set_col_bnds(lpi_copy.lp, A_col_index + 1, glpk.GLP_FX, val, val) # needs: import swiglpk as glpk
-                    A_col_index += (col_index not in fixed_indices)
+                    if col_index not in fixed_indices:
+                        glpk.glp_set_col_bnds(lpi_copy.lp, A_col_index + 1, glpk.GLP_FX, val, val) # needs: import swiglpk as glpk
+                        A_col_index += 1
                     col_index += 1
             else:
-                glpk.glp_set_col_bnds(lpi_copy.lp, A_col_index + 1, glpk.GLP_DB, lbound, ubound) # needs: import swiglpk as glpk
-                A_col_index += (col_index not in fixed_indices)
+                if col_index not in fixed_indices:
+                    glpk.glp_set_col_bnds(lpi_copy.lp, A_col_index + 1, glpk.GLP_DB, lbound, ubound) # needs: import swiglpk as glpk
+                    A_col_index += 1
                 col_index += 1
 
         feasible = lpi_copy.is_feasible()
@@ -273,7 +276,6 @@ class ProbabilityDensityComputer:
                 )
         )
         self._regions = tuple(map(lambda x: x[1], regions))
-        ic(self._regions, len(self._regions))
 
 
     def sample(self, *args):
@@ -389,7 +391,6 @@ def run_on_model(config, model_index):
         for hot_indices in product(*config['one_hot_indices']):
             init_box = np.array(init, dtype=np.float32)
             init_box[list(hot_indices)] = 1
-            ic(init_box)
             res = enumerate_network(init_box, network)
             result_str = res.result_str
             assert result_str == "none"
