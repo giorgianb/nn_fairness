@@ -248,9 +248,7 @@ class ProbabilityDensityComputer:
 
     def __init__(self, X, discrete_indices, continuous_indices, one_hot_indices, fixed_indices, class_filter):
         # Assumption: One-Hot indices are contiguous in the array for a one-hot feature
-        ic(len(X))
         matches_given = np.apply_along_axis(class_filter, 1, X)
-        ic(len(X[matches_given]))
         X = X[matches_given]
 
         self.discrete_indices = tuple(discrete_indices)
@@ -299,10 +297,6 @@ class ProbabilityDensityComputer:
 
     @property
     def regions(self):
-        ic(self._regions)
-        for i, region in enumerate(self._regions):
-            ic(i, len(region))
-
         return product(*self._regions)
 
 
@@ -486,8 +480,7 @@ def main():
 
 
     n_models = len(config['models'])
-    n_models = 2
-    results = Parallel(n_jobs=1)(delayed(run_on_model)(config, i) for i in range(n_models))
+    results = Parallel(n_jobs=16)(delayed(run_on_model)(config, i) for i in range(n_models))
 
     results_dict = {}
     for result in results:
