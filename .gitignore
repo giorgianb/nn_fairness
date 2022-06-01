@@ -19,3 +19,5 @@ out.txt
 stdout.txt
 *.pkl
 *.mp4
+NN-verification
+.ipynb_checkpoints

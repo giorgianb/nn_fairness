@@ -1,1017 +1,0 @@
-Train feature/label shape: (30121, 8) (30121, 1)
-Dev. feature/label shape: (6455, 8) (6455, 1)
-Test feature/label shape: (6455, 8) (6455, 1)
-dataloader #batch: 942
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.627351701259613 	 dev-auc: 0.5972537457949348
-epoch: 0 	 train-loss: 0.4546409547328949
- 10%|█         | 1/10 [00:13<02:01, 13.55s/it]epoch: 1 	 dev-loss: 0.4354477822780609 	 dev-auc: 0.8248480461279569
-epoch: 1 	 train-loss: 0.4338914752006531
- 20%|██        | 2/10 [00:27<01:48, 13.56s/it]epoch: 2 	 dev-loss: 0.42233479022979736 	 dev-auc: 0.8286959723125642
-epoch: 2 	 train-loss: 0.42942100763320923
- 30%|███       | 3/10 [00:40<01:35, 13.63s/it]epoch: 3 	 dev-loss: 0.42174598574638367 	 dev-auc: 0.829383852549642
-epoch: 3 	 train-loss: 0.427939772605896
- 40%|████      | 4/10 [00:54<01:21, 13.60s/it]epoch: 4 	 dev-loss: 0.4215717315673828 	 dev-auc: 0.8292398180141585
-epoch: 4 	 train-loss: 0.4267004430294037
- 50%|█████     | 5/10 [01:08<01:07, 13.59s/it]epoch: 5 	 dev-loss: 0.41957706212997437 	 dev-auc: 0.8307578830716364
-epoch: 5 	 train-loss: 0.4252360463142395
- 60%|██████    | 6/10 [01:45<01:23, 20.86s/it]epoch: 6 	 dev-loss: 0.4190483093261719 	 dev-auc: 0.8312805208411823
-epoch: 6 	 train-loss: 0.4241557717323303
- 70%|███████   | 7/10 [01:59<00:55, 18.66s/it]epoch: 7 	 dev-loss: 0.418435275554657 	 dev-auc: 0.8317926507531571
-epoch: 7 	 train-loss: 0.42324256896972656
- 80%|████████  | 8/10 [02:12<00:34, 17.12s/it]epoch: 8 	 dev-loss: 0.4182964861392975 	 dev-auc: 0.8323073435572225
-epoch: 8 	 train-loss: 0.4227595031261444
- 90%|█████████ | 9/10 [32:04<09:09, 549.45s/it]epoch: 9 	 dev-loss: 0.417766273021698 	 dev-auc: 0.8321204446515261
-epoch: 9 	 train-loss: 0.42250531911849976
-100%|██████████| 10/10 [48:07<00:00, 673.61s/it]100%|██████████| 10/10 [48:07<00:00, 288.78s/it]
-epoch: 9 	 test-loss: 0.4145619571208954 	 test-auc: 0.8372531627901074
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 973
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7779403924942017 	 dev-auc: 0.4401080310273968
-epoch: 0 	 train-loss: 0.47032681107521057
- 10%|█         | 1/10 [00:13<02:04, 13.82s/it]epoch: 1 	 dev-loss: 0.479153573513031 	 dev-auc: 0.8145065202537672
-epoch: 1 	 train-loss: 0.4388255178928375
- 20%|██        | 2/10 [00:27<01:50, 13.83s/it]epoch: 2 	 dev-loss: 0.4433325231075287 	 dev-auc: 0.8227349415993779
-epoch: 2 	 train-loss: 0.4346080720424652
- 30%|███       | 3/10 [00:41<01:36, 13.82s/it]epoch: 3 	 dev-loss: 0.44672319293022156 	 dev-auc: 0.8247687246177575
-early break
- 30%|███       | 3/10 [00:48<01:52, 16.03s/it]
-epoch: 3 	 test-loss: 0.4443384110927582 	 test-auc: 0.8324422957351505
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1009
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.692013144493103 	 dev-auc: 0.5278319829454909
-epoch: 0 	 train-loss: 0.47119829058647156
- 10%|█         | 1/10 [00:13<02:04, 13.83s/it]epoch: 1 	 dev-loss: 0.6736652255058289 	 dev-auc: 0.7446152355733523
-epoch: 1 	 train-loss: 0.44706422090530396
- 20%|██        | 2/10 [00:27<01:50, 13.82s/it]epoch: 2 	 dev-loss: 0.4977079927921295 	 dev-auc: 0.8305574649101629
-epoch: 2 	 train-loss: 0.44353336095809937
- 30%|███       | 3/10 [00:41<01:36, 13.79s/it]epoch: 3 	 dev-loss: 0.45977887511253357 	 dev-auc: 0.8292377036281838
-epoch: 3 	 train-loss: 0.4420841932296753
- 40%|████      | 4/10 [00:55<01:22, 13.75s/it]epoch: 4 	 dev-loss: 0.468433678150177 	 dev-auc: 0.828147513405207
-early break
- 40%|████      | 4/10 [01:01<01:32, 15.37s/it]
-epoch: 4 	 test-loss: 0.46344077587127686 	 test-auc: 0.8356021038740213
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1137
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6777241826057434 	 dev-auc: 0.6212634314767231
-epoch: 0 	 train-loss: 0.5090323686599731
- 10%|█         | 1/10 [00:13<02:02, 13.66s/it]epoch: 1 	 dev-loss: 0.5481669902801514 	 dev-auc: 0.7096987140945226
-epoch: 1 	 train-loss: 0.4764896631240845
- 20%|██        | 2/10 [00:27<01:49, 13.67s/it]epoch: 2 	 dev-loss: 0.4650486707687378 	 dev-auc: 0.8221748856053116
-epoch: 2 	 train-loss: 0.4710809290409088
- 30%|███       | 3/10 [00:41<01:35, 13.68s/it]epoch: 3 	 dev-loss: 0.46040335297584534 	 dev-auc: 0.8214662459423011
-epoch: 3 	 train-loss: 0.4690866768360138
- 40%|████      | 4/10 [00:54<01:22, 13.69s/it]epoch: 4 	 dev-loss: 0.4413228929042816 	 dev-auc: 0.8235804397000186
-epoch: 4 	 train-loss: 0.4683533012866974
- 50%|█████     | 5/10 [01:08<01:08, 13.73s/it]epoch: 5 	 dev-loss: 0.4581828713417053 	 dev-auc: 0.8161215907768691
-early break
- 50%|█████     | 5/10 [01:15<01:15, 15.02s/it]
-epoch: 5 	 test-loss: 0.455013245344162 	 test-auc: 0.8230686994810106
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1226
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6706237196922302 	 dev-auc: 0.35873402869721527
-epoch: 0 	 train-loss: 0.5150799751281738
- 10%|█         | 1/10 [00:13<02:03, 13.75s/it]epoch: 1 	 dev-loss: 0.528433084487915 	 dev-auc: 0.808588353910794
-epoch: 1 	 train-loss: 0.4880230724811554
- 20%|██        | 2/10 [00:27<01:50, 13.75s/it]epoch: 2 	 dev-loss: 0.49249327182769775 	 dev-auc: 0.8135340949223471
-epoch: 2 	 train-loss: 0.4851848781108856
- 30%|███       | 3/10 [00:41<01:36, 13.75s/it]epoch: 3 	 dev-loss: 0.4710514545440674 	 dev-auc: 0.817685531602766
-epoch: 3 	 train-loss: 0.48308703303337097
- 40%|████      | 4/10 [00:55<01:22, 13.76s/it]epoch: 4 	 dev-loss: 0.47298264503479004 	 dev-auc: 0.818541153127164
-early break
- 40%|████      | 4/10 [01:01<01:32, 15.38s/it]
-epoch: 4 	 test-loss: 0.4692367911338806 	 test-auc: 0.8260037179438375
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1369
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6443536281585693 	 dev-auc: 0.6461878774178964
-epoch: 0 	 train-loss: 0.5291419625282288
- 10%|█         | 1/10 [00:13<02:04, 13.83s/it]epoch: 1 	 dev-loss: 0.5285482406616211 	 dev-auc: 0.7127438143317951
-epoch: 1 	 train-loss: 0.5106253623962402
- 20%|██        | 2/10 [00:27<01:50, 13.83s/it]epoch: 2 	 dev-loss: 0.47231367230415344 	 dev-auc: 0.8151683871361269
-epoch: 2 	 train-loss: 0.5025634169578552
- 30%|███       | 3/10 [00:41<01:36, 13.84s/it]epoch: 3 	 dev-loss: 0.4617867171764374 	 dev-auc: 0.813772892392875
-epoch: 3 	 train-loss: 0.5008437633514404
- 40%|████      | 4/10 [00:55<01:23, 13.85s/it]epoch: 4 	 dev-loss: 0.45446959137916565 	 dev-auc: 0.8168534886856003
-epoch: 4 	 train-loss: 0.4998567998409271
- 50%|█████     | 5/10 [01:09<01:09, 13.86s/it]epoch: 5 	 dev-loss: 0.4482649862766266 	 dev-auc: 0.8204660132316992
-epoch: 5 	 train-loss: 0.49906089901924133
- 60%|██████    | 6/10 [01:23<00:55, 13.85s/it]epoch: 6 	 dev-loss: 0.44937095046043396 	 dev-auc: 0.8190441206999156
-early break
- 60%|██████    | 6/10 [01:29<00:59, 14.94s/it]
-epoch: 6 	 test-loss: 0.4504554569721222 	 test-auc: 0.8248045858870405
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1389
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6497783064842224 	 dev-auc: 0.27442487420044176
-epoch: 0 	 train-loss: 0.5277409553527832
- 10%|█         | 1/10 [00:13<02:04, 13.87s/it]epoch: 1 	 dev-loss: 0.6006534695625305 	 dev-auc: 0.8127106376936841
-epoch: 1 	 train-loss: 0.5054211616516113
- 20%|██        | 2/10 [00:27<01:50, 13.86s/it]epoch: 2 	 dev-loss: 0.5967661738395691 	 dev-auc: 0.811101333677786
-epoch: 2 	 train-loss: 0.5021013617515564
- 30%|███       | 3/10 [00:41<01:37, 13.86s/it]epoch: 3 	 dev-loss: 0.5311583876609802 	 dev-auc: 0.8105759407992431
-epoch: 3 	 train-loss: 0.5008320808410645
- 40%|████      | 4/10 [00:55<01:23, 13.86s/it]epoch: 4 	 dev-loss: 0.53898686170578 	 dev-auc: 0.8112433178995971
-early break
- 40%|████      | 4/10 [01:01<01:32, 15.48s/it]
-epoch: 4 	 test-loss: 0.5337068438529968 	 test-auc: 0.8176576953823899
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1474
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7583445906639099 	 dev-auc: 0.678477883010127
-epoch: 0 	 train-loss: 0.5431210994720459
- 10%|█         | 1/10 [00:13<02:04, 13.87s/it]epoch: 1 	 dev-loss: 0.4869630038738251 	 dev-auc: 0.8167502041343551
-epoch: 1 	 train-loss: 0.5180841088294983
- 20%|██        | 2/10 [00:27<01:51, 13.88s/it]epoch: 2 	 dev-loss: 0.48810750246047974 	 dev-auc: 0.8003624954572737
-early break
- 20%|██        | 2/10 [00:34<02:16, 17.12s/it]
-epoch: 2 	 test-loss: 0.4904680848121643 	 test-auc: 0.8027437917951452
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1474
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6505531668663025 	 dev-auc: 0.32234954670127597
-epoch: 0 	 train-loss: 0.5327180027961731
- 10%|█         | 1/10 [00:13<02:05, 13.93s/it]epoch: 1 	 dev-loss: 0.4778221845626831 	 dev-auc: 0.8171900604893791
-epoch: 1 	 train-loss: 0.5123831629753113
- 20%|██        | 2/10 [00:27<01:51, 13.93s/it]epoch: 2 	 dev-loss: 0.4611923098564148 	 dev-auc: 0.8054896892288308
-epoch: 2 	 train-loss: 0.5087810158729553
- 30%|███       | 3/10 [00:41<01:37, 13.93s/it]epoch: 3 	 dev-loss: 0.45000433921813965 	 dev-auc: 0.8180594575587632
-epoch: 3 	 train-loss: 0.507645845413208
- 40%|████      | 4/10 [00:55<01:23, 13.94s/it]epoch: 4 	 dev-loss: 0.44485336542129517 	 dev-auc: 0.8216962655074191
-epoch: 4 	 train-loss: 0.5066455602645874
- 50%|█████     | 5/10 [01:09<01:09, 13.94s/it]epoch: 5 	 dev-loss: 0.4383435845375061 	 dev-auc: 0.8279450449300612
-epoch: 5 	 train-loss: 0.5060846209526062
- 60%|██████    | 6/10 [01:23<00:55, 13.94s/it]epoch: 6 	 dev-loss: 0.4351522922515869 	 dev-auc: 0.8283570298336016
-epoch: 6 	 train-loss: 0.5055408477783203
- 70%|███████   | 7/10 [01:37<00:41, 13.94s/it]epoch: 7 	 dev-loss: 0.43282294273376465 	 dev-auc: 0.8297254860652994
-epoch: 7 	 train-loss: 0.5050771832466125
- 80%|████████  | 8/10 [01:51<00:27, 13.98s/it]epoch: 8 	 dev-loss: 0.43325355648994446 	 dev-auc: 0.8275114035883564
-early break
- 80%|████████  | 8/10 [01:58<00:29, 14.77s/it]
-epoch: 8 	 test-loss: 0.43275952339172363 	 test-auc: 0.8318164630045554
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1499
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7452378869056702 	 dev-auc: 0.518757679065426
-epoch: 0 	 train-loss: 0.5439319014549255
- 10%|█         | 1/10 [00:13<02:05, 13.94s/it]epoch: 1 	 dev-loss: 0.678753674030304 	 dev-auc: 0.6775979140108697
-epoch: 1 	 train-loss: 0.5300315618515015
- 20%|██        | 2/10 [00:27<01:51, 13.95s/it]epoch: 2 	 dev-loss: 0.5096094608306885 	 dev-auc: 0.8043347219082679
-epoch: 2 	 train-loss: 0.5162287354469299
- 30%|███       | 3/10 [00:41<01:37, 13.96s/it]epoch: 3 	 dev-loss: 0.7677018642425537 	 dev-auc: 0.8260081392327009
-early break
- 30%|███       | 3/10 [00:48<01:52, 16.13s/it]
-epoch: 3 	 test-loss: 0.765020489692688 	 test-auc: 0.8297386019008464
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1507
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7067343592643738 	 dev-auc: 0.5357282534761787
-epoch: 0 	 train-loss: 0.5337060689926147
- 10%|█         | 1/10 [00:13<02:05, 13.93s/it]epoch: 1 	 dev-loss: 0.48649489879608154 	 dev-auc: 0.8114452097240226
-epoch: 1 	 train-loss: 0.511372447013855
- 20%|██        | 2/10 [00:27<01:51, 13.94s/it]epoch: 2 	 dev-loss: 0.4442369341850281 	 dev-auc: 0.8225860375689226
-epoch: 2 	 train-loss: 0.5093353986740112
- 30%|███       | 3/10 [00:41<01:37, 13.95s/it]epoch: 3 	 dev-loss: 0.44940513372421265 	 dev-auc: 0.825263362791215
-early break
- 30%|███       | 3/10 [00:48<01:52, 16.12s/it]
-epoch: 3 	 test-loss: 0.44983235001564026 	 test-auc: 0.8284818607484107
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1608
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7395790815353394 	 dev-auc: 0.547555167533693
-epoch: 0 	 train-loss: 0.5415781736373901
- 10%|█         | 1/10 [00:13<02:05, 13.99s/it]epoch: 1 	 dev-loss: 0.48076897859573364 	 dev-auc: 0.7967218431704821
-epoch: 1 	 train-loss: 0.5200501084327698
- 20%|██        | 2/10 [00:28<01:52, 14.00s/it]epoch: 2 	 dev-loss: 0.47355368733406067 	 dev-auc: 0.8028349815292367
-epoch: 2 	 train-loss: 0.5156876444816589
- 30%|███       | 3/10 [00:42<01:38, 14.01s/it]epoch: 3 	 dev-loss: 0.44980329275131226 	 dev-auc: 0.8186981302677042
-epoch: 3 	 train-loss: 0.5133631229400635
- 40%|████      | 4/10 [00:56<01:24, 14.02s/it]epoch: 4 	 dev-loss: 0.44586750864982605 	 dev-auc: 0.8184601016648034
-epoch: 4 	 train-loss: 0.5119500160217285
- 50%|█████     | 5/10 [01:10<01:10, 14.02s/it]epoch: 5 	 dev-loss: 0.43876349925994873 	 dev-auc: 0.8234804228361886
-epoch: 5 	 train-loss: 0.5108981728553772
- 60%|██████    | 6/10 [01:24<00:56, 14.02s/it]epoch: 6 	 dev-loss: 0.43935513496398926 	 dev-auc: 0.8197815288266415
-early break
- 60%|██████    | 6/10 [01:30<01:00, 15.11s/it]
-epoch: 6 	 test-loss: 0.4353286027908325 	 test-auc: 0.8270710089205273
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1689
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6739150285720825 	 dev-auc: 0.4882399133537442
-epoch: 0 	 train-loss: 0.5453809499740601
- 10%|█         | 1/10 [00:14<02:06, 14.05s/it]epoch: 1 	 dev-loss: 0.4959903359413147 	 dev-auc: 0.8139827932550832
-epoch: 1 	 train-loss: 0.5282900929450989
- 20%|██        | 2/10 [00:28<01:52, 14.06s/it]epoch: 2 	 dev-loss: 0.46263372898101807 	 dev-auc: 0.8117387249406819
-epoch: 2 	 train-loss: 0.5239675045013428
- 30%|███       | 3/10 [00:42<01:38, 14.06s/it]epoch: 3 	 dev-loss: 0.45278701186180115 	 dev-auc: 0.8157935405892909
-epoch: 3 	 train-loss: 0.5216956734657288
- 40%|████      | 4/10 [00:56<01:24, 14.08s/it]epoch: 4 	 dev-loss: 0.4481237828731537 	 dev-auc: 0.8159883844604676
-epoch: 4 	 train-loss: 0.518724799156189
- 50%|█████     | 5/10 [01:10<01:10, 14.08s/it]epoch: 5 	 dev-loss: 0.4444500803947449 	 dev-auc: 0.8223975368556697
-epoch: 5 	 train-loss: 0.5169311165809631
- 60%|██████    | 6/10 [01:24<00:56, 14.08s/it]epoch: 6 	 dev-loss: 0.4426979422569275 	 dev-auc: 0.8234756174135192
-epoch: 6 	 train-loss: 0.5157850384712219
- 70%|███████   | 7/10 [01:38<00:42, 14.08s/it]epoch: 7 	 dev-loss: 0.44098931550979614 	 dev-auc: 0.8214542644217782
-epoch: 7 	 train-loss: 0.5152076482772827
- 80%|████████  | 8/10 [01:52<00:28, 14.08s/it]epoch: 8 	 dev-loss: 0.4374585747718811 	 dev-auc: 0.8213196485147272
-epoch: 8 	 train-loss: 0.514561116695404
- 90%|█████████ | 9/10 [02:06<00:14, 14.09s/it]epoch: 9 	 dev-loss: 0.4404437839984894 	 dev-auc: 0.8232587326703644
-early break
- 90%|█████████ | 9/10 [02:13<00:14, 14.80s/it]
-epoch: 9 	 test-loss: 0.43954095244407654 	 test-auc: 0.8319410712246373
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1719
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.724290132522583 	 dev-auc: 0.5767597073382265
-epoch: 0 	 train-loss: 0.5565813183784485
- 10%|█         | 1/10 [00:14<02:06, 14.08s/it]epoch: 1 	 dev-loss: 0.7670716643333435 	 dev-auc: 0.6448840060668781
-early break
- 10%|█         | 1/10 [00:20<03:05, 20.57s/it]
-epoch: 1 	 test-loss: 0.7660703659057617 	 test-auc: 0.6380559468067559
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1755
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6537706851959229 	 dev-auc: 0.6189829700946373
-epoch: 0 	 train-loss: 0.5350404381752014
- 10%|█         | 1/10 [00:14<02:07, 14.13s/it]epoch: 1 	 dev-loss: 0.7658388614654541 	 dev-auc: 0.7671153137415611
-early break
- 10%|█         | 1/10 [00:20<03:05, 20.63s/it]
-epoch: 1 	 test-loss: 0.7787008881568909 	 test-auc: 0.7662998210818835
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1777
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.843403160572052 	 dev-auc: 0.6303926453198259
-epoch: 0 	 train-loss: 0.5491722226142883
- 10%|█         | 1/10 [00:14<02:06, 14.10s/it]epoch: 1 	 dev-loss: 0.8362895250320435 	 dev-auc: 0.7813665955720401
-epoch: 1 	 train-loss: 0.5255938172340393
- 20%|██        | 2/10 [00:28<01:52, 14.11s/it]epoch: 2 	 dev-loss: 0.48662489652633667 	 dev-auc: 0.8149282441472514
-epoch: 2 	 train-loss: 0.5162017345428467
- 30%|███       | 3/10 [00:42<01:38, 14.12s/it]epoch: 3 	 dev-loss: 0.4933711290359497 	 dev-auc: 0.8189036101410565
-early break
- 30%|███       | 3/10 [00:48<01:54, 16.29s/it]
-epoch: 3 	 test-loss: 0.4906463325023651 	 test-auc: 0.8218106259596228
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1901
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7211273908615112 	 dev-auc: 0.5863540220234443
-epoch: 0 	 train-loss: 0.5533573031425476
- 10%|█         | 1/10 [00:14<02:07, 14.18s/it]epoch: 1 	 dev-loss: 0.5506302118301392 	 dev-auc: 0.7186950419827354
-epoch: 1 	 train-loss: 0.5364390015602112
- 20%|██        | 2/10 [00:28<01:53, 14.19s/it]epoch: 2 	 dev-loss: 0.46904152631759644 	 dev-auc: 0.8108451726133452
-epoch: 2 	 train-loss: 0.520104706287384
- 30%|███       | 3/10 [00:42<01:39, 14.20s/it]epoch: 3 	 dev-loss: 0.4791732728481293 	 dev-auc: 0.8117551274500607
-early break
- 30%|███       | 3/10 [00:49<01:54, 16.37s/it]
-epoch: 3 	 test-loss: 0.47903749346733093 	 test-auc: 0.8202202215539228
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1912
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6916520595550537 	 dev-auc: 0.5476520448547122
-epoch: 0 	 train-loss: 0.5603213906288147
- 10%|█         | 1/10 [00:14<02:07, 14.21s/it]epoch: 1 	 dev-loss: 0.5562163591384888 	 dev-auc: 0.6164965803330837
-epoch: 1 	 train-loss: 0.5334790349006653
- 20%|██        | 2/10 [00:28<01:53, 14.22s/it]epoch: 2 	 dev-loss: 0.4723924398422241 	 dev-auc: 0.8078359528653389
-epoch: 2 	 train-loss: 0.5200990438461304
- 30%|███       | 3/10 [00:42<01:39, 14.22s/it]epoch: 3 	 dev-loss: 0.45465248823165894 	 dev-auc: 0.8173228182996646
-epoch: 3 	 train-loss: 0.5177678465843201
- 40%|████      | 4/10 [00:56<01:25, 14.22s/it]epoch: 4 	 dev-loss: 0.4616480767726898 	 dev-auc: 0.8195351708244464
-early break
- 40%|████      | 4/10 [01:03<01:35, 15.85s/it]
-epoch: 4 	 test-loss: 0.45569276809692383 	 test-auc: 0.8280324082886038
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 2136
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7231243848800659 	 dev-auc: 0.6465109940382006
-epoch: 0 	 train-loss: 0.5601896643638611
- 10%|█         | 1/10 [00:14<02:08, 14.33s/it]epoch: 1 	 dev-loss: 0.49661388993263245 	 dev-auc: 0.7678844376579063
-epoch: 1 	 train-loss: 0.5395498871803284
- 20%|██        | 2/10 [00:28<01:54, 14.35s/it]epoch: 2 	 dev-loss: 0.43347808718681335 	 dev-auc: 0.820108489785081
-epoch: 2 	 train-loss: 0.5341703295707703
- 30%|███       | 3/10 [00:43<01:40, 14.36s/it]epoch: 3 	 dev-loss: 0.4289109706878662 	 dev-auc: 0.823542060390964
-epoch: 3 	 train-loss: 0.5323949456214905
- 40%|████      | 4/10 [00:57<01:26, 14.39s/it]epoch: 4 	 dev-loss: 0.42609381675720215 	 dev-auc: 0.8286026830404717
-epoch: 4 	 train-loss: 0.5312973260879517
- 50%|█████     | 5/10 [01:11<01:12, 14.40s/it]epoch: 5 	 dev-loss: 0.430624783039093 	 dev-auc: 0.8248028751548626
-early break
- 50%|█████     | 5/10 [01:18<01:18, 15.70s/it]
-epoch: 5 	 test-loss: 0.43002262711524963 	 test-auc: 0.82827299605365
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 2270
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6999728083610535 	 dev-auc: 0.4738727247284744
-epoch: 0 	 train-loss: 0.5618589520454407
- 10%|█         | 1/10 [00:14<02:10, 14.51s/it]epoch: 1 	 dev-loss: 0.5608689188957214 	 dev-auc: 0.7954471887892949
-epoch: 1 	 train-loss: 0.5465868711471558
- 20%|██        | 2/10 [00:29<01:56, 14.51s/it]epoch: 2 	 dev-loss: 0.48262348771095276 	 dev-auc: 0.7913032485682403
-epoch: 2 	 train-loss: 0.5398004055023193
- 30%|███       | 3/10 [00:43<01:41, 14.51s/it]epoch: 3 	 dev-loss: 0.4292275607585907 	 dev-auc: 0.8222142900712022
-epoch: 3 	 train-loss: 0.5358879566192627
- 40%|████      | 4/10 [00:58<01:27, 14.51s/it]epoch: 4 	 dev-loss: 0.43198975920677185 	 dev-auc: 0.8209762209746063
-early break
- 40%|████      | 4/10 [01:04<01:36, 16.14s/it]
-epoch: 4 	 test-loss: 0.4323708713054657 	 test-auc: 0.8227840166482674
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=0-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-Train feature/label shape: (30121, 8) (30121, 1)
-Dev. feature/label shape: (6455, 8) (6455, 1)
-Test feature/label shape: (6455, 8) (6455, 1)
-dataloader #batch: 942
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7325660586357117 	 dev-auc: 0.5498289961375298
-epoch: 0 	 train-loss: 0.4705962836742401
- 10%|█         | 1/10 [00:13<02:02, 13.60s/it]epoch: 1 	 dev-loss: 0.4212420880794525 	 dev-auc: 0.8318790691682909
-epoch: 1 	 train-loss: 0.4319044351577759
- 20%|██        | 2/10 [00:27<01:48, 13.62s/it]epoch: 2 	 dev-loss: 0.41635075211524963 	 dev-auc: 0.8342978602962082
-epoch: 2 	 train-loss: 0.4295662045478821
- 30%|███       | 3/10 [00:40<01:35, 13.63s/it]epoch: 3 	 dev-loss: 0.4155099093914032 	 dev-auc: 0.8351038032449676
-epoch: 3 	 train-loss: 0.4289867877960205
- 40%|████      | 4/10 [00:54<01:21, 13.61s/it]epoch: 4 	 dev-loss: 0.41746994853019714 	 dev-auc: 0.8353898575002027
-early break
- 40%|████      | 4/10 [01:01<01:31, 15.25s/it]
-epoch: 4 	 test-loss: 0.4277098774909973 	 test-auc: 0.8318758285995572
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=1-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 965
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7509291172027588 	 dev-auc: 0.3502768676731876
-epoch: 0 	 train-loss: 0.47194164991378784
- 10%|█         | 1/10 [00:13<02:02, 13.62s/it]epoch: 1 	 dev-loss: 0.45171797275543213 	 dev-auc: 0.816323273256166
-epoch: 1 	 train-loss: 0.4474496841430664
- 20%|██        | 2/10 [00:27<01:49, 13.63s/it]epoch: 2 	 dev-loss: 0.4482361376285553 	 dev-auc: 0.8175051475652477
-epoch: 2 	 train-loss: 0.446845680475235
- 30%|███       | 3/10 [00:41<01:35, 13.69s/it]epoch: 3 	 dev-loss: 0.44782400131225586 	 dev-auc: 0.8177539935971063
-epoch: 3 	 train-loss: 0.4465351104736328
- 40%|████      | 4/10 [00:54<01:22, 13.69s/it]epoch: 4 	 dev-loss: 0.43734288215637207 	 dev-auc: 0.8184920636142581
-epoch: 4 	 train-loss: 0.4463019073009491
- 50%|█████     | 5/10 [01:08<01:08, 13.70s/it]epoch: 5 	 dev-loss: 0.43282538652420044 	 dev-auc: 0.8185036109939267
-epoch: 5 	 train-loss: 0.44569969177246094
- 60%|██████    | 6/10 [01:22<00:54, 13.66s/it]epoch: 6 	 dev-loss: 0.4408509135246277 	 dev-auc: 0.8180030962374019
-early break
- 60%|██████    | 6/10 [01:28<00:59, 14.76s/it]
-epoch: 6 	 test-loss: 0.44797539710998535 	 test-auc: 0.8170086008256551
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=1-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 996
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7562721371650696 	 dev-auc: 0.6555007995918899
-epoch: 0 	 train-loss: 0.46997106075286865
- 10%|█         | 1/10 [00:13<02:02, 13.60s/it]epoch: 1 	 dev-loss: 0.4197465479373932 	 dev-auc: 0.8349942314423344
-epoch: 1 	 train-loss: 0.443491667509079
- 20%|██        | 2/10 [00:27<01:49, 13.63s/it]epoch: 2 	 dev-loss: 0.4310972988605499 	 dev-auc: 0.8358191634154378
-early break
- 20%|██        | 2/10 [00:33<02:15, 16.93s/it]
-epoch: 2 	 test-loss: 0.4416661262512207 	 test-auc: 0.8290848259450188
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=1-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1043
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6332581639289856 	 dev-auc: 0.4923295247509102
-epoch: 0 	 train-loss: 0.48318496346473694
- 10%|█         | 1/10 [00:13<02:02, 13.63s/it]epoch: 1 	 dev-loss: 0.44893571734428406 	 dev-auc: 0.8137149126453558
-epoch: 1 	 train-loss: 0.4557340741157532
- 20%|██        | 2/10 [00:27<01:49, 13.65s/it]epoch: 2 	 dev-loss: 0.4322833716869354 	 dev-auc: 0.825187362650334
-epoch: 2 	 train-loss: 0.45267918705940247
- 30%|███       | 3/10 [00:41<01:35, 13.67s/it]epoch: 3 	 dev-loss: 0.43236809968948364 	 dev-auc: 0.8225513524804284
-early break
- 30%|███       | 3/10 [00:47<01:50, 15.84s/it]
-epoch: 3 	 test-loss: 0.44284766912460327 	 test-auc: 0.8184591848341997
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=1-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1145
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6829023957252502 	 dev-auc: 0.5733185475551887
-epoch: 0 	 train-loss: 0.4921463429927826
- 10%|█         | 1/10 [00:13<02:03, 13.74s/it]epoch: 1 	 dev-loss: 0.46574535965919495 	 dev-auc: 0.8250674623581085
-epoch: 1 	 train-loss: 0.4753991961479187
- 20%|██        | 2/10 [00:27<01:49, 13.74s/it]epoch: 2 	 dev-loss: 0.4374849796295166 	 dev-auc: 0.8322176640010183
-epoch: 2 	 train-loss: 0.47237107157707214
- 30%|███       | 3/10 [00:41<01:36, 13.74s/it]epoch: 3 	 dev-loss: 0.4319395422935486 	 dev-auc: 0.8336777660080041
-epoch: 3 	 train-loss: 0.470721572637558
- 40%|████      | 4/10 [00:54<01:22, 13.73s/it]epoch: 4 	 dev-loss: 0.43332886695861816 	 dev-auc: 0.832657619166392
-early break
- 40%|████      | 4/10 [01:01<01:32, 15.35s/it]
-epoch: 4 	 test-loss: 0.44354185461997986 	 test-auc: 0.8260133451715483
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=1-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1230
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7495992183685303 	 dev-auc: 0.3659510242269157
-epoch: 0 	 train-loss: 0.5159875154495239
- 10%|█         | 1/10 [00:13<02:04, 13.78s/it]epoch: 1 	 dev-loss: 0.4951794147491455 	 dev-auc: 0.8213112922082388
-epoch: 1 	 train-loss: 0.49218928813934326
- 20%|██        | 2/10 [00:27<01:50, 13.79s/it]epoch: 2 	 dev-loss: 0.4945765435695648 	 dev-auc: 0.8163684363410921
-epoch: 2 	 train-loss: 0.4893462359905243
- 30%|███       | 3/10 [00:41<01:36, 13.79s/it]epoch: 3 	 dev-loss: 0.4800827205181122 	 dev-auc: 0.8243018069339705
-epoch: 3 	 train-loss: 0.4871954619884491
- 40%|████      | 4/10 [00:55<01:22, 13.80s/it]epoch: 4 	 dev-loss: 0.46559569239616394 	 dev-auc: 0.8275679832732357
-epoch: 4 	 train-loss: 0.4860284924507141
- 50%|█████     | 5/10 [01:09<01:09, 13.82s/it]epoch: 5 	 dev-loss: 0.4623086154460907 	 dev-auc: 0.8289623293682198
-epoch: 5 	 train-loss: 0.48497259616851807
- 60%|██████    | 6/10 [01:22<00:55, 13.83s/it]epoch: 6 	 dev-loss: 0.45719513297080994 	 dev-auc: 0.8309783735541398
-epoch: 6 	 train-loss: 0.4841654896736145
- 70%|███████   | 7/10 [01:36<00:41, 13.83s/it]epoch: 7 	 dev-loss: 0.44636887311935425 	 dev-auc: 0.8337127289075563
-epoch: 7 	 train-loss: 0.4834805130958557
- 80%|████████  | 8/10 [01:50<00:27, 13.83s/it]epoch: 8 	 dev-loss: 0.44183260202407837 	 dev-auc: 0.8341403668679503
-epoch: 8 	 train-loss: 0.48251259326934814
- 90%|█████████ | 9/10 [02:04<00:13, 13.82s/it]epoch: 9 	 dev-loss: 0.4395100176334381 	 dev-auc: 0.8341238156237587
-epoch: 9 	 train-loss: 0.48179733753204346
-100%|██████████| 10/10 [02:18<00:00, 13.80s/it]100%|██████████| 10/10 [02:18<00:00, 13.81s/it]
-epoch: 9 	 test-loss: 0.4462193250656128 	 test-auc: 0.8285906232477982
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=1-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1379
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6358906030654907 	 dev-auc: 0.4659596719312453
-epoch: 0 	 train-loss: 0.5331999659538269
- 10%|█         | 1/10 [00:13<02:04, 13.86s/it]epoch: 1 	 dev-loss: 0.48237287998199463 	 dev-auc: 0.7984907189860477
-epoch: 1 	 train-loss: 0.5106584429740906
- 20%|██        | 2/10 [00:27<01:50, 13.87s/it]epoch: 2 	 dev-loss: 0.46325188875198364 	 dev-auc: 0.8147349953348586
-epoch: 2 	 train-loss: 0.5080854892730713
- 30%|███       | 3/10 [00:41<01:37, 13.88s/it]epoch: 3 	 dev-loss: 0.4480339586734772 	 dev-auc: 0.8219097672356189
-epoch: 3 	 train-loss: 0.5064507722854614
- 40%|████      | 4/10 [00:55<01:23, 13.92s/it]epoch: 4 	 dev-loss: 0.4352948069572449 	 dev-auc: 0.824724312725623
-epoch: 4 	 train-loss: 0.5049961805343628
- 50%|█████     | 5/10 [01:09<01:09, 13.92s/it]epoch: 5 	 dev-loss: 0.4318177402019501 	 dev-auc: 0.8260716994766214
-epoch: 5 	 train-loss: 0.5043255090713501
- 60%|██████    | 6/10 [01:23<00:55, 13.92s/it]epoch: 6 	 dev-loss: 0.4283139705657959 	 dev-auc: 0.8282335614069121
-epoch: 6 	 train-loss: 0.503149688243866
- 70%|███████   | 7/10 [01:37<00:41, 13.91s/it]epoch: 7 	 dev-loss: 0.4258790612220764 	 dev-auc: 0.8262631935227925
-epoch: 7 	 train-loss: 0.5021823644638062
- 80%|████████  | 8/10 [01:51<00:27, 13.90s/it]epoch: 8 	 dev-loss: 0.42296668887138367 	 dev-auc: 0.8291184756021831
-epoch: 8 	 train-loss: 0.501714825630188
- 90%|█████████ | 9/10 [02:05<00:13, 13.90s/it]epoch: 9 	 dev-loss: 0.42365923523902893 	 dev-auc: 0.8299695816358685
-early break
- 90%|█████████ | 9/10 [02:11<00:14, 14.63s/it]
-epoch: 9 	 test-loss: 0.4351457953453064 	 test-auc: 0.823665772257304
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=1-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1700
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.693637490272522 	 dev-auc: 0.5521271813000194
-epoch: 0 	 train-loss: 0.5628347396850586
- 10%|█         | 1/10 [00:14<02:07, 14.17s/it]epoch: 1 	 dev-loss: 0.5528427362442017 	 dev-auc: 0.820352474783089
-epoch: 1 	 train-loss: 0.5468845963478088
- 20%|██        | 2/10 [00:28<01:53, 14.17s/it]epoch: 2 	 dev-loss: 0.539139449596405 	 dev-auc: 0.8311170062622724
-epoch: 2 	 train-loss: 0.5443531274795532
- 30%|███       | 3/10 [00:42<01:39, 14.17s/it]epoch: 3 	 dev-loss: 0.5058324933052063 	 dev-auc: 0.8309736262980538
-epoch: 3 	 train-loss: 0.5428858995437622
- 40%|████      | 4/10 [00:56<01:24, 14.16s/it]epoch: 4 	 dev-loss: 0.5045279860496521 	 dev-auc: 0.8303027235393078
-epoch: 4 	 train-loss: 0.5418591499328613
- 50%|█████     | 5/10 [01:10<01:10, 14.16s/it]epoch: 5 	 dev-loss: 0.48465466499328613 	 dev-auc: 0.8314585520920259
-epoch: 5 	 train-loss: 0.541148841381073
- 60%|██████    | 6/10 [01:24<00:56, 14.16s/it]epoch: 6 	 dev-loss: 0.48469793796539307 	 dev-auc: 0.8324386038653443
-early break
- 60%|██████    | 6/10 [01:31<01:00, 15.24s/it]
-epoch: 6 	 test-loss: 0.49055910110473633 	 test-auc: 0.8303454045881138
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=1-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 2134
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7386094927787781 	 dev-auc: 0.5376080834736982
-epoch: 0 	 train-loss: 0.5853387117385864
- 10%|█         | 1/10 [00:14<02:09, 14.38s/it]epoch: 1 	 dev-loss: 0.5084550380706787 	 dev-auc: 0.7858818143653509
-epoch: 1 	 train-loss: 0.5708068013191223
- 20%|██        | 2/10 [00:28<01:55, 14.40s/it]epoch: 2 	 dev-loss: 0.47651877999305725 	 dev-auc: 0.8095293724281419
-epoch: 2 	 train-loss: 0.5684215426445007
- 30%|███       | 3/10 [00:43<01:40, 14.41s/it]epoch: 3 	 dev-loss: 0.46264708042144775 	 dev-auc: 0.8151184324919656
-epoch: 3 	 train-loss: 0.5667657256126404
- 40%|████      | 4/10 [00:57<01:26, 14.43s/it]epoch: 4 	 dev-loss: 0.44528281688690186 	 dev-auc: 0.822574254783438
-epoch: 4 	 train-loss: 0.565626859664917
- 50%|█████     | 5/10 [01:12<01:12, 14.44s/it]epoch: 5 	 dev-loss: 0.4371608793735504 	 dev-auc: 0.8246325752093668
-epoch: 5 	 train-loss: 0.5650297403335571
- 60%|██████    | 6/10 [01:26<00:57, 14.43s/it]epoch: 6 	 dev-loss: 0.45429423451423645 	 dev-auc: 0.8180517235362286
-early break
- 60%|██████    | 6/10 [01:33<01:02, 15.52s/it]
-epoch: 6 	 test-loss: 0.46839332580566406 	 test-auc: 0.8055283759801005
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=1-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 2622
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7562030553817749 	 dev-auc: 0.5829135860823795
-epoch: 0 	 train-loss: 0.6097533106803894
- 10%|█         | 1/10 [00:14<02:12, 14.73s/it]epoch: 1 	 dev-loss: 0.5268981456756592 	 dev-auc: 0.8116475467720199
-epoch: 1 	 train-loss: 0.5951858162879944
- 20%|██        | 2/10 [00:29<01:58, 14.76s/it]epoch: 2 	 dev-loss: 0.528323769569397 	 dev-auc: 0.8088278691132742
-early break
- 20%|██        | 2/10 [00:36<02:24, 18.05s/it]
-epoch: 2 	 test-loss: 0.5312791466712952 	 test-auc: 0.8114539009234009
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=1-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-
-Train feature/label shape: (30121, 8) (30121, 1)
-Dev. feature/label shape: (6455, 8) (6455, 1)
-Test feature/label shape: (6455, 8) (6455, 1)
-dataloader #batch: 942
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6918091177940369 	 dev-auc: 0.3945459072626634
-epoch: 0 	 train-loss: 0.46592721343040466
- 10%|█         | 1/10 [00:13<02:01, 13.55s/it]epoch: 1 	 dev-loss: 0.438350647687912 	 dev-auc: 0.8169791313017309
-epoch: 1 	 train-loss: 0.43180450797080994
- 20%|██        | 2/10 [00:27<01:48, 13.58s/it]epoch: 2 	 dev-loss: 0.42914098501205444 	 dev-auc: 0.8254583612138778
-epoch: 2 	 train-loss: 0.4261139929294586
- 30%|███       | 3/10 [00:40<01:35, 13.59s/it]epoch: 3 	 dev-loss: 0.42798689007759094 	 dev-auc: 0.8272785398670899
-epoch: 3 	 train-loss: 0.42372891306877136
- 40%|████      | 4/10 [00:54<01:21, 13.59s/it]epoch: 4 	 dev-loss: 0.42601341009140015 	 dev-auc: 0.8286570603159027
-epoch: 4 	 train-loss: 0.4215678572654724
- 50%|█████     | 5/10 [01:07<01:07, 13.59s/it]epoch: 5 	 dev-loss: 0.4251794219017029 	 dev-auc: 0.8297665857276423
-epoch: 5 	 train-loss: 0.42077428102493286
- 60%|██████    | 6/10 [01:21<00:54, 13.60s/it]epoch: 6 	 dev-loss: 0.4256879389286041 	 dev-auc: 0.8304011608433355
-early break
- 60%|██████    | 6/10 [01:28<00:58, 14.69s/it]
-epoch: 6 	 test-loss: 0.4049980342388153 	 test-auc: 0.8409305133461011
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=2-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 987
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6167330741882324 	 dev-auc: 0.5358517851270175
-epoch: 0 	 train-loss: 0.46344253420829773
- 10%|█         | 1/10 [00:13<02:02, 13.63s/it]epoch: 1 	 dev-loss: 0.5114865899085999 	 dev-auc: 0.792728437547707
-epoch: 1 	 train-loss: 0.44393685460090637
- 20%|██        | 2/10 [00:27<01:49, 13.63s/it]epoch: 2 	 dev-loss: 0.4710868299007416 	 dev-auc: 0.7940578426673978
-epoch: 2 	 train-loss: 0.4401779770851135
- 30%|███       | 3/10 [00:40<01:35, 13.64s/it]epoch: 3 	 dev-loss: 0.4561403691768646 	 dev-auc: 0.8038146407732677
-epoch: 3 	 train-loss: 0.43810683488845825
- 40%|████      | 4/10 [00:54<01:21, 13.64s/it]epoch: 4 	 dev-loss: 0.44807350635528564 	 dev-auc: 0.8123958989206527
-epoch: 4 	 train-loss: 0.4363625943660736
- 50%|█████     | 5/10 [01:08<01:08, 13.64s/it]epoch: 5 	 dev-loss: 0.46095865964889526 	 dev-auc: 0.8097808874026016
-early break
- 50%|█████     | 5/10 [01:14<01:14, 14.94s/it]
-epoch: 5 	 test-loss: 0.44574132561683655 	 test-auc: 0.8252167259273057
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=2-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1045
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7731547355651855 	 dev-auc: 0.709834926923226
-epoch: 0 	 train-loss: 0.48571497201919556
- 10%|█         | 1/10 [00:13<02:02, 13.62s/it]epoch: 1 	 dev-loss: 0.4737434387207031 	 dev-auc: 0.8095053731916888
-epoch: 1 	 train-loss: 0.4565265476703644
- 20%|██        | 2/10 [00:27<01:49, 13.63s/it]epoch: 2 	 dev-loss: 0.44371989369392395 	 dev-auc: 0.8179249811450303
-epoch: 2 	 train-loss: 0.4534238576889038
- 30%|███       | 3/10 [00:41<01:35, 13.66s/it]epoch: 3 	 dev-loss: 0.4484834372997284 	 dev-auc: 0.8139167652137895
-early break
- 30%|███       | 3/10 [00:47<01:50, 15.84s/it]
-epoch: 3 	 test-loss: 0.4308081567287445 	 test-auc: 0.8282254132265364
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=2-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1059
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7082363367080688 	 dev-auc: 0.5533432348824157
-epoch: 0 	 train-loss: 0.48826754093170166
- 10%|█         | 1/10 [00:13<02:03, 13.68s/it]epoch: 1 	 dev-loss: 0.44115227460861206 	 dev-auc: 0.8174612969940659
-epoch: 1 	 train-loss: 0.4593227803707123
- 20%|██        | 2/10 [00:27<01:49, 13.68s/it]epoch: 2 	 dev-loss: 0.43923935294151306 	 dev-auc: 0.8235313440612352
-epoch: 2 	 train-loss: 0.4564335346221924
- 30%|███       | 3/10 [00:41<01:35, 13.69s/it]epoch: 3 	 dev-loss: 0.4369131326675415 	 dev-auc: 0.8240856637164556
-epoch: 3 	 train-loss: 0.45506200194358826
- 40%|████      | 4/10 [00:54<01:22, 13.69s/it]epoch: 4 	 dev-loss: 0.43327948451042175 	 dev-auc: 0.8244564338169674
-epoch: 4 	 train-loss: 0.45441389083862305
- 50%|█████     | 5/10 [01:08<01:08, 13.69s/it]epoch: 5 	 dev-loss: 0.43583667278289795 	 dev-auc: 0.8231809542905911
-early break
- 50%|█████     | 5/10 [01:14<01:14, 14.99s/it]
-epoch: 5 	 test-loss: 0.41692596673965454 	 test-auc: 0.8331674087617044
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=2-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1096
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7450594902038574 	 dev-auc: 0.3790784394591542
-epoch: 0 	 train-loss: 0.4993586838245392
- 10%|█         | 1/10 [00:13<02:03, 13.69s/it]epoch: 1 	 dev-loss: 0.4738275408744812 	 dev-auc: 0.8091715661739184
-epoch: 1 	 train-loss: 0.4643630385398865
- 20%|██        | 2/10 [00:27<01:49, 13.69s/it]epoch: 2 	 dev-loss: 0.45740923285484314 	 dev-auc: 0.8199128228225264
-epoch: 2 	 train-loss: 0.46141496300697327
- 30%|███       | 3/10 [00:41<01:35, 13.70s/it]epoch: 3 	 dev-loss: 0.4599020779132843 	 dev-auc: 0.8212076699915718
-early break
- 30%|███       | 3/10 [00:47<01:51, 15.87s/it]
-epoch: 3 	 test-loss: 0.4460819959640503 	 test-auc: 0.833588351051521
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=2-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1197
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7713165879249573 	 dev-auc: 0.5650085053066076
-epoch: 0 	 train-loss: 0.5947712063789368
- 10%|█         | 1/10 [00:13<02:03, 13.76s/it]epoch: 1 	 dev-loss: 0.7494769096374512 	 dev-auc: 0.5
-epoch: 1 	 train-loss: 0.593561053276062
- 20%|██        | 2/10 [00:27<01:50, 13.81s/it]epoch: 2 	 dev-loss: 0.7516943216323853 	 dev-auc: 0.5
-early break
- 20%|██        | 2/10 [00:34<02:16, 17.10s/it]
-epoch: 2 	 test-loss: 0.7544220685958862 	 test-auc: 0.5
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=2-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-
-Train feature/label shape: (30121, 8) (30121, 1)
-Dev. feature/label shape: (6455, 8) (6455, 1)
-Test feature/label shape: (6455, 8) (6455, 1)
-dataloader #batch: 942
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7214258909225464 	 dev-auc: 0.5660864499094158
-epoch: 0 	 train-loss: 0.4591495096683502
- 10%|█         | 1/10 [00:13<02:02, 13.63s/it]epoch: 1 	 dev-loss: 0.4774115979671478 	 dev-auc: 0.8107781396815064
-epoch: 1 	 train-loss: 0.4281582236289978
- 20%|██        | 2/10 [00:27<01:49, 13.63s/it]epoch: 2 	 dev-loss: 0.47002336382865906 	 dev-auc: 0.822817646769128
-epoch: 2 	 train-loss: 0.423698365688324
- 30%|███       | 3/10 [00:40<01:35, 13.62s/it]epoch: 3 	 dev-loss: 0.46012648940086365 	 dev-auc: 0.8261681519885664
-epoch: 3 	 train-loss: 0.42276865243911743
- 40%|████      | 4/10 [00:54<01:21, 13.63s/it]epoch: 4 	 dev-loss: 0.4493672847747803 	 dev-auc: 0.8265804497489215
-epoch: 4 	 train-loss: 0.42172718048095703
- 50%|█████     | 5/10 [01:08<01:08, 13.63s/it]epoch: 5 	 dev-loss: 0.44781434535980225 	 dev-auc: 0.8277355959524448
-epoch: 5 	 train-loss: 0.4211901128292084
- 60%|██████    | 6/10 [01:21<00:54, 13.64s/it]epoch: 6 	 dev-loss: 0.4354247748851776 	 dev-auc: 0.8275927260600433
-epoch: 6 	 train-loss: 0.4198233485221863
- 70%|███████   | 7/10 [01:35<00:40, 13.64s/it]epoch: 7 	 dev-loss: 0.4339137077331543 	 dev-auc: 0.8271115557618816
-epoch: 7 	 train-loss: 0.41945281624794006
- 80%|████████  | 8/10 [01:49<00:27, 13.64s/it]epoch: 8 	 dev-loss: 0.43494004011154175 	 dev-auc: 0.8280286479758349
-early break
- 80%|████████  | 8/10 [01:55<00:28, 14.45s/it]
-epoch: 8 	 test-loss: 0.42921215295791626 	 test-auc: 0.8325130420323741
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=3-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1018
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6539869904518127 	 dev-auc: 0.4254447278509793
-epoch: 0 	 train-loss: 0.4816038906574249
- 10%|█         | 1/10 [00:13<02:03, 13.71s/it]epoch: 1 	 dev-loss: 0.48113203048706055 	 dev-auc: 0.8101569743881656
-epoch: 1 	 train-loss: 0.44818469882011414
- 20%|██        | 2/10 [00:27<01:49, 13.72s/it]epoch: 2 	 dev-loss: 0.46875160932540894 	 dev-auc: 0.8173387176408443
-epoch: 2 	 train-loss: 0.4451397657394409
- 30%|███       | 3/10 [00:41<01:35, 13.71s/it]epoch: 3 	 dev-loss: 0.4548129737377167 	 dev-auc: 0.8207860318993596
-epoch: 3 	 train-loss: 0.4431326985359192
- 40%|████      | 4/10 [00:54<01:22, 13.71s/it]epoch: 4 	 dev-loss: 0.44900116324424744 	 dev-auc: 0.82290958098248
-epoch: 4 	 train-loss: 0.4425815939903259
- 50%|█████     | 5/10 [01:08<01:08, 13.70s/it]epoch: 5 	 dev-loss: 0.44736674427986145 	 dev-auc: 0.8230473885558591
-epoch: 5 	 train-loss: 0.44176456332206726
- 60%|██████    | 6/10 [01:22<00:54, 13.70s/it]epoch: 6 	 dev-loss: 0.44626444578170776 	 dev-auc: 0.8224118487764063
-epoch: 6 	 train-loss: 0.4411710798740387
- 70%|███████   | 7/10 [01:35<00:41, 13.69s/it]epoch: 7 	 dev-loss: 0.4487650692462921 	 dev-auc: 0.82081134349447
-early break
- 70%|███████   | 7/10 [01:42<00:43, 14.63s/it]
-epoch: 7 	 test-loss: 0.4404626488685608 	 test-auc: 0.8286904565170377
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=3-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1032
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6772297620773315 	 dev-auc: 0.4195782500775598
-epoch: 0 	 train-loss: 0.4867236912250519
- 10%|█         | 1/10 [00:13<02:03, 13.69s/it]epoch: 1 	 dev-loss: 0.49552544951438904 	 dev-auc: 0.8040907537555532
-epoch: 1 	 train-loss: 0.4558979570865631
- 20%|██        | 2/10 [00:27<01:49, 13.70s/it]epoch: 2 	 dev-loss: 0.47729378938674927 	 dev-auc: 0.8107800146144776
-epoch: 2 	 train-loss: 0.44966739416122437
- 30%|███       | 3/10 [00:41<01:35, 13.70s/it]epoch: 3 	 dev-loss: 0.4753360450267792 	 dev-auc: 0.8168677969762582
-epoch: 3 	 train-loss: 0.44756919145584106
- 40%|████      | 4/10 [00:54<01:22, 13.71s/it]epoch: 4 	 dev-loss: 0.4599291980266571 	 dev-auc: 0.8211026455804205
-epoch: 4 	 train-loss: 0.44590073823928833
- 50%|█████     | 5/10 [01:08<01:08, 13.71s/it]epoch: 5 	 dev-loss: 0.43896129727363586 	 dev-auc: 0.8266051988641406
-epoch: 5 	 train-loss: 0.44510000944137573
- 60%|██████    | 6/10 [01:22<00:54, 13.71s/it]epoch: 6 	 dev-loss: 0.4420163035392761 	 dev-auc: 0.8256277338085164
-early break
- 60%|██████    | 6/10 [01:28<00:59, 14.80s/it]
-epoch: 6 	 test-loss: 0.43591201305389404 	 test-auc: 0.8310065393780628
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=3-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1063
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6789461970329285 	 dev-auc: 0.39257590291147093
-epoch: 0 	 train-loss: 0.4851522147655487
- 10%|█         | 1/10 [00:13<02:03, 13.68s/it]epoch: 1 	 dev-loss: 0.6142054796218872 	 dev-auc: 0.7884514378610965
-epoch: 1 	 train-loss: 0.4605785012245178
- 20%|██        | 2/10 [00:27<01:49, 13.69s/it]epoch: 2 	 dev-loss: 0.5408534407615662 	 dev-auc: 0.8038098887964755
-epoch: 2 	 train-loss: 0.4564320743083954
- 30%|███       | 3/10 [00:41<01:35, 13.70s/it]epoch: 3 	 dev-loss: 0.48530682921409607 	 dev-auc: 0.8215681914371562
-epoch: 3 	 train-loss: 0.45407748222351074
- 40%|████      | 4/10 [00:54<01:22, 13.70s/it]epoch: 4 	 dev-loss: 0.4691956043243408 	 dev-auc: 0.8215026937786974
-epoch: 4 	 train-loss: 0.4528588354587555
- 50%|█████     | 5/10 [01:08<01:08, 13.71s/it]epoch: 5 	 dev-loss: 0.45182713866233826 	 dev-auc: 0.8233805016470661
-epoch: 5 	 train-loss: 0.45175042748451233
- 60%|██████    | 6/10 [01:22<00:54, 13.72s/it]epoch: 6 	 dev-loss: 0.44969967007637024 	 dev-auc: 0.8252300605253362
-epoch: 6 	 train-loss: 0.4509734511375427
- 70%|███████   | 7/10 [01:36<00:41, 13.72s/it]epoch: 7 	 dev-loss: 0.439881294965744 	 dev-auc: 0.8254693644702202
-epoch: 7 	 train-loss: 0.45006370544433594
- 80%|████████  | 8/10 [01:49<00:27, 13.75s/it]epoch: 8 	 dev-loss: 0.43876639008522034 	 dev-auc: 0.8254848014183493
-epoch: 8 	 train-loss: 0.44984152913093567
- 90%|█████████ | 9/10 [02:03<00:13, 13.74s/it]epoch: 9 	 dev-loss: 0.439613938331604 	 dev-auc: 0.8253557435321687
-early break
- 90%|█████████ | 9/10 [02:10<00:14, 14.45s/it]
-epoch: 9 	 test-loss: 0.43230366706848145 	 test-auc: 0.8328883128700427
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=3-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1096
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7726287841796875 	 dev-auc: 0.4937474110300556
-epoch: 0 	 train-loss: 0.5017287135124207
- 10%|█         | 1/10 [00:13<02:04, 13.78s/it]epoch: 1 	 dev-loss: 0.4655722379684448 	 dev-auc: 0.8028324237408514
-epoch: 1 	 train-loss: 0.4629165828227997
- 20%|██        | 2/10 [00:27<01:50, 13.78s/it]epoch: 2 	 dev-loss: 0.4522799253463745 	 dev-auc: 0.8097106778432672
-epoch: 2 	 train-loss: 0.45963793992996216
- 30%|███       | 3/10 [00:41<01:36, 13.77s/it]epoch: 3 	 dev-loss: 0.44970399141311646 	 dev-auc: 0.8137611580386002
-epoch: 3 	 train-loss: 0.4580551087856293
- 40%|████      | 4/10 [00:55<01:22, 13.76s/it]epoch: 4 	 dev-loss: 0.44572409987449646 	 dev-auc: 0.8175007118495514
-epoch: 4 	 train-loss: 0.4569339156150818
- 50%|█████     | 5/10 [01:08<01:08, 13.77s/it]epoch: 5 	 dev-loss: 0.44477415084838867 	 dev-auc: 0.8192483368719569
-epoch: 5 	 train-loss: 0.45579591393470764
- 60%|██████    | 6/10 [01:22<00:55, 13.76s/it]epoch: 6 	 dev-loss: 0.44540682435035706 	 dev-auc: 0.8210703967333167
-early break
- 60%|██████    | 6/10 [01:29<00:59, 14.85s/it]
-epoch: 6 	 test-loss: 0.4346746802330017 	 test-auc: 0.8276272529001562
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=3-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1137
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6470158100128174 	 dev-auc: 0.5493841720158504
-epoch: 0 	 train-loss: 0.49372169375419617
- 10%|█         | 1/10 [00:13<02:03, 13.77s/it]epoch: 1 	 dev-loss: 0.7193440198898315 	 dev-auc: 0.7814938115962354
-early break
- 10%|█         | 1/10 [00:20<03:02, 20.29s/it]
-epoch: 1 	 test-loss: 0.7220508456230164 	 test-auc: 0.7914452402957486
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=3-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1202
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7770020961761475 	 dev-auc: 0.5642887641766807
-epoch: 0 	 train-loss: 0.48314836621284485
- 10%|█         | 1/10 [00:13<02:04, 13.83s/it]epoch: 1 	 dev-loss: 0.5075971484184265 	 dev-auc: 0.8115159883034181
-epoch: 1 	 train-loss: 0.4551388621330261
- 20%|██        | 2/10 [00:27<01:50, 13.83s/it]epoch: 2 	 dev-loss: 0.47436273097991943 	 dev-auc: 0.8177965137746326
-epoch: 2 	 train-loss: 0.45212051272392273
- 30%|███       | 3/10 [00:41<01:36, 13.83s/it]epoch: 3 	 dev-loss: 0.4578995704650879 	 dev-auc: 0.8231515723312892
-epoch: 3 	 train-loss: 0.4499332010746002
- 40%|████      | 4/10 [00:55<01:22, 13.83s/it]epoch: 4 	 dev-loss: 0.4559202790260315 	 dev-auc: 0.8223584131867286
-epoch: 4 	 train-loss: 0.4484325647354126
- 50%|█████     | 5/10 [01:09<01:09, 13.82s/it]epoch: 5 	 dev-loss: 0.4417787790298462 	 dev-auc: 0.8233008794935581
-epoch: 5 	 train-loss: 0.4468531608581543
- 60%|██████    | 6/10 [01:22<00:55, 13.83s/it]epoch: 6 	 dev-loss: 0.42976081371307373 	 dev-auc: 0.8260039078602939
-epoch: 6 	 train-loss: 0.445085734128952
- 70%|███████   | 7/10 [01:36<00:41, 13.85s/it]epoch: 7 	 dev-loss: 0.42692726850509644 	 dev-auc: 0.8270041846004006
-epoch: 7 	 train-loss: 0.4445176124572754
- 80%|████████  | 8/10 [01:50<00:27, 13.85s/it]epoch: 8 	 dev-loss: 0.4281937777996063 	 dev-auc: 0.8270894940505877
-early break
- 80%|████████  | 8/10 [01:57<00:29, 14.65s/it]
-epoch: 8 	 test-loss: 0.4173344373703003 	 test-auc: 0.8339879852125693
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=3-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1249
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.638500452041626 	 dev-auc: 0.4883634160078778
-epoch: 0 	 train-loss: 0.47800832986831665
- 10%|█         | 1/10 [00:13<02:04, 13.85s/it]epoch: 1 	 dev-loss: 0.5535354614257812 	 dev-auc: 0.8053785202179022
-epoch: 1 	 train-loss: 0.4674542248249054
- 20%|██        | 2/10 [00:27<01:50, 13.87s/it]epoch: 2 	 dev-loss: 0.5114347338676453 	 dev-auc: 0.8067752202858748
-epoch: 2 	 train-loss: 0.4610617160797119
- 30%|███       | 3/10 [00:41<01:37, 13.86s/it]epoch: 3 	 dev-loss: 0.46753352880477905 	 dev-auc: 0.8131073064137957
-epoch: 3 	 train-loss: 0.45877063274383545
- 40%|████      | 4/10 [00:55<01:23, 13.86s/it]epoch: 4 	 dev-loss: 0.4544203579425812 	 dev-auc: 0.8223184771144432
-epoch: 4 	 train-loss: 0.457690566778183
- 50%|█████     | 5/10 [01:09<01:09, 13.87s/it]epoch: 5 	 dev-loss: 0.4587971270084381 	 dev-auc: 0.8231378853205997
-early break
- 50%|█████     | 5/10 [01:15<01:15, 15.17s/it]
-epoch: 5 	 test-loss: 0.4481707513332367 	 test-auc: 0.8279969131646489
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=3-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1266
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7405060529708862 	 dev-auc: 0.3482072390912025
-epoch: 0 	 train-loss: 0.49215081334114075
- 10%|█         | 1/10 [00:13<02:04, 13.81s/it]epoch: 1 	 dev-loss: 0.8343758583068848 	 dev-auc: 0.7720878978576515
-early break
- 10%|█         | 1/10 [00:20<03:02, 20.33s/it]
-epoch: 1 	 test-loss: 0.8393737077713013 	 test-auc: 0.780745239683686
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=3-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1270
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.8213395476341248 	 dev-auc: 0.5538283881351241
-epoch: 0 	 train-loss: 0.4961925148963928
- 10%|█         | 1/10 [00:13<02:04, 13.85s/it]epoch: 1 	 dev-loss: 0.8381080627441406 	 dev-auc: 0.7220974975144638
-early break
- 10%|█         | 1/10 [00:20<03:03, 20.37s/it]
-epoch: 1 	 test-loss: 0.8449677228927612 	 test-auc: 0.7257919706577225
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=3-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1279
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6696176528930664 	 dev-auc: 0.67190085454445
-epoch: 0 	 train-loss: 0.49059027433395386
- 10%|█         | 1/10 [00:13<02:04, 13.86s/it]epoch: 1 	 dev-loss: 0.4787050783634186 	 dev-auc: 0.8049085995175672
-epoch: 1 	 train-loss: 0.4706118702888489
- 20%|██        | 2/10 [00:27<01:50, 13.87s/it]epoch: 2 	 dev-loss: 0.49217483401298523 	 dev-auc: 0.8077358109447587
-early break
- 20%|██        | 2/10 [00:34<02:17, 17.13s/it]
-epoch: 2 	 test-loss: 0.480388879776001 	 test-auc: 0.8183387577374904
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=3-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1419
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.624265730381012 	 dev-auc: 0.5722982903361205
-epoch: 0 	 train-loss: 0.5040116906166077
- 10%|█         | 1/10 [00:13<02:05, 13.95s/it]epoch: 1 	 dev-loss: 0.4586707353591919 	 dev-auc: 0.8212997635334537
-epoch: 1 	 train-loss: 0.47884708642959595
- 20%|██        | 2/10 [00:27<01:51, 13.96s/it]epoch: 2 	 dev-loss: 0.4440440833568573 	 dev-auc: 0.825219310909635
-epoch: 2 	 train-loss: 0.47603103518486023
- 30%|███       | 3/10 [00:41<01:37, 13.96s/it]epoch: 3 	 dev-loss: 0.44766876101493835 	 dev-auc: 0.8224674717878836
-early break
- 30%|███       | 3/10 [00:48<01:52, 16.14s/it]
-epoch: 3 	 test-loss: 0.44184136390686035 	 test-auc: 0.8238153784790655
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=3-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1435
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7794235944747925 	 dev-auc: 0.5045623993942217
-epoch: 0 	 train-loss: 0.5064525604248047
- 10%|█         | 1/10 [00:13<02:05, 13.98s/it]epoch: 1 	 dev-loss: 0.6869593858718872 	 dev-auc: 0.7888000503981982
-epoch: 1 	 train-loss: 0.4840518832206726
- 20%|██        | 2/10 [00:27<01:51, 13.98s/it]epoch: 2 	 dev-loss: 0.5867980718612671 	 dev-auc: 0.8127612562850879
-epoch: 2 	 train-loss: 0.4788990318775177
- 30%|███       | 3/10 [00:41<01:37, 13.99s/it]epoch: 3 	 dev-loss: 0.4528369605541229 	 dev-auc: 0.8246767053077853
-epoch: 3 	 train-loss: 0.4751429557800293
- 40%|████      | 4/10 [00:55<01:23, 13.98s/it]epoch: 4 	 dev-loss: 0.43382495641708374 	 dev-auc: 0.8258592255326872
-epoch: 4 	 train-loss: 0.4736221432685852
- 50%|█████     | 5/10 [01:09<01:09, 13.99s/it]epoch: 5 	 dev-loss: 0.4378035068511963 	 dev-auc: 0.8225779053398842
-early break
- 50%|█████     | 5/10 [01:16<01:16, 15.29s/it]
-epoch: 5 	 test-loss: 0.43001624941825867 	 test-auc: 0.8255017382575804
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=3-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1477
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6951294541358948 	 dev-auc: 0.4778425421291189
-epoch: 0 	 train-loss: 0.5055214166641235
- 10%|█         | 1/10 [00:13<02:05, 13.98s/it]epoch: 1 	 dev-loss: 0.5643976926803589 	 dev-auc: 0.8181906871829333
-epoch: 1 	 train-loss: 0.4830371141433716
- 20%|██        | 2/10 [00:27<01:51, 13.99s/it]epoch: 2 	 dev-loss: 0.540908694267273 	 dev-auc: 0.8197346944846722
-epoch: 2 	 train-loss: 0.47998321056365967
- 30%|███       | 3/10 [00:42<01:37, 14.00s/it]epoch: 3 	 dev-loss: 0.5097073316574097 	 dev-auc: 0.8225302195446513
-epoch: 3 	 train-loss: 0.4782138466835022
- 40%|████      | 4/10 [00:56<01:24, 14.01s/it]epoch: 4 	 dev-loss: 0.4654000997543335 	 dev-auc: 0.8208733412780493
-epoch: 4 	 train-loss: 0.47871026396751404
- 50%|█████     | 5/10 [01:10<01:10, 14.01s/it]epoch: 5 	 dev-loss: 0.471689373254776 	 dev-auc: 0.8214772571880554
-early break
- 50%|█████     | 5/10 [01:16<01:16, 15.32s/it]
-epoch: 5 	 test-loss: 0.4661703407764435 	 test-auc: 0.8273521435449845
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=3-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1534
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.747234582901001 	 dev-auc: 0.37538826736944153
-epoch: 0 	 train-loss: 0.522878110408783
- 10%|█         | 1/10 [00:14<02:06, 14.03s/it]epoch: 1 	 dev-loss: 0.5100036859512329 	 dev-auc: 0.7979009750401422
-epoch: 1 	 train-loss: 0.4943791627883911
- 20%|██        | 2/10 [00:28<01:52, 14.04s/it]epoch: 2 	 dev-loss: 0.48934677243232727 	 dev-auc: 0.8147838714765948
-epoch: 2 	 train-loss: 0.4894302487373352
- 30%|███       | 3/10 [00:42<01:38, 14.05s/it]epoch: 3 	 dev-loss: 0.4688323438167572 	 dev-auc: 0.821565879019825
-epoch: 3 	 train-loss: 0.48675742745399475
- 40%|████      | 4/10 [00:56<01:24, 14.05s/it]epoch: 4 	 dev-loss: 0.4758641719818115 	 dev-auc: 0.7969265098772719
-early break
- 40%|████      | 4/10 [01:02<01:34, 15.69s/it]
-epoch: 4 	 test-loss: 0.4669486880302429 	 test-auc: 0.80516443059823
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=3-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1579
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6169537305831909 	 dev-auc: 0.421469057481195
-epoch: 0 	 train-loss: 0.5215237140655518
- 10%|█         | 1/10 [00:14<02:06, 14.03s/it]epoch: 1 	 dev-loss: 0.614739179611206 	 dev-auc: 0.7924515448572714
-epoch: 1 	 train-loss: 0.4964442551136017
- 20%|██        | 2/10 [00:28<01:52, 14.05s/it]epoch: 2 	 dev-loss: 0.5215141177177429 	 dev-auc: 0.8157375248834853
-epoch: 2 	 train-loss: 0.49097105860710144
- 30%|███       | 3/10 [00:42<01:38, 14.06s/it]epoch: 3 	 dev-loss: 0.47450798749923706 	 dev-auc: 0.817920946826151
-epoch: 3 	 train-loss: 0.4899819493293762
- 40%|████      | 4/10 [00:56<01:24, 14.07s/it]epoch: 4 	 dev-loss: 0.571260929107666 	 dev-auc: 0.8171705986510982
-early break
- 40%|████      | 4/10 [01:02<01:34, 15.71s/it]
-epoch: 4 	 test-loss: 0.5730804800987244 	 test-auc: 0.8212311357228254
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=3-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1729
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7874562740325928 	 dev-auc: 0.4828886117321306
-epoch: 0 	 train-loss: 0.5237006545066833
- 10%|█         | 1/10 [00:14<02:07, 14.13s/it]epoch: 1 	 dev-loss: 0.5266932249069214 	 dev-auc: 0.7724606345323155
-epoch: 1 	 train-loss: 0.4984818398952484
- 20%|██        | 2/10 [00:28<01:53, 14.15s/it]epoch: 2 	 dev-loss: 0.48681432008743286 	 dev-auc: 0.8093916892471094
-epoch: 2 	 train-loss: 0.49008679389953613
- 30%|███       | 3/10 [00:42<01:39, 14.16s/it]epoch: 3 	 dev-loss: 0.4700108468532562 	 dev-auc: 0.8166808036612692
-epoch: 3 	 train-loss: 0.4871346056461334
- 40%|████      | 4/10 [00:56<01:25, 14.17s/it]epoch: 4 	 dev-loss: 0.4592072665691376 	 dev-auc: 0.8208395299868029
-epoch: 4 	 train-loss: 0.48280829191207886
- 50%|█████     | 5/10 [01:10<01:10, 14.18s/it]epoch: 5 	 dev-loss: 0.4450802505016327 	 dev-auc: 0.8187277304836351
-epoch: 5 	 train-loss: 0.4813874065876007
- 60%|██████    | 6/10 [01:25<00:56, 14.18s/it]epoch: 6 	 dev-loss: 0.4401622712612152 	 dev-auc: 0.8206877854116715
-epoch: 6 	 train-loss: 0.4802655279636383
- 70%|███████   | 7/10 [01:39<00:42, 14.18s/it]epoch: 7 	 dev-loss: 0.44340842962265015 	 dev-auc: 0.8195286393511432
-early break
- 70%|███████   | 7/10 [01:45<00:45, 15.11s/it]
-epoch: 7 	 test-loss: 0.43436264991760254 	 test-auc: 0.8266944313531069
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=3-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1764
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.632630467414856 	 dev-auc: 0.3916186246341693
-epoch: 0 	 train-loss: 0.6118674874305725
- 10%|█         | 1/10 [00:14<02:07, 14.21s/it]epoch: 1 	 dev-loss: 0.5786193609237671 	 dev-auc: 0.5
-epoch: 1 	 train-loss: 0.6117709279060364
- 20%|██        | 2/10 [00:28<01:53, 14.21s/it]epoch: 2 	 dev-loss: 0.5786145329475403 	 dev-auc: 0.5
-epoch: 2 	 train-loss: 0.6118294596672058
- 30%|███       | 3/10 [00:42<01:39, 14.21s/it]epoch: 3 	 dev-loss: 0.5786147117614746 	 dev-auc: 0.5
-early break
- 30%|███       | 3/10 [00:49<01:54, 16.39s/it]
-epoch: 3 	 test-loss: 0.5726807713508606 	 test-auc: 0.5
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=3-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-
-Train feature/label shape: (30121, 8) (30121, 1)
-Dev. feature/label shape: (6455, 8) (6455, 1)
-Test feature/label shape: (6455, 8) (6455, 1)
-dataloader #batch: 942
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6868197321891785 	 dev-auc: 0.5938910048363442
-epoch: 0 	 train-loss: 0.46120357513427734
- 10%|█         | 1/10 [00:13<02:02, 13.62s/it]epoch: 1 	 dev-loss: 0.4359531104564667 	 dev-auc: 0.8141353963344782
-epoch: 1 	 train-loss: 0.428164541721344
- 20%|██        | 2/10 [00:27<01:49, 13.63s/it]epoch: 2 	 dev-loss: 0.4276610016822815 	 dev-auc: 0.8204294236131423
-epoch: 2 	 train-loss: 0.4254637062549591
- 30%|███       | 3/10 [00:40<01:35, 13.63s/it]epoch: 3 	 dev-loss: 0.4260846972465515 	 dev-auc: 0.8210940377732555
-epoch: 3 	 train-loss: 0.424227774143219
- 40%|████      | 4/10 [00:54<01:21, 13.63s/it]epoch: 4 	 dev-loss: 0.4245966374874115 	 dev-auc: 0.8236055311691961
-epoch: 4 	 train-loss: 0.42357751727104187
- 50%|█████     | 5/10 [01:08<01:08, 13.64s/it]epoch: 5 	 dev-loss: 0.4250272214412689 	 dev-auc: 0.8217667047138899
-early break
- 50%|█████     | 5/10 [01:14<01:14, 14.95s/it]
-epoch: 5 	 test-loss: 0.4139058589935303 	 test-auc: 0.8370422944044403
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=4-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1008
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6917517185211182 	 dev-auc: 0.5443143862664244
-epoch: 0 	 train-loss: 0.4805220365524292
- 10%|█         | 1/10 [00:13<02:03, 13.69s/it]epoch: 1 	 dev-loss: 0.5062573552131653 	 dev-auc: 0.7990141578272246
-epoch: 1 	 train-loss: 0.4541904926300049
- 20%|██        | 2/10 [00:27<01:49, 13.70s/it]epoch: 2 	 dev-loss: 0.4715725779533386 	 dev-auc: 0.8158924610907828
-epoch: 2 	 train-loss: 0.445590078830719
- 30%|███       | 3/10 [00:41<01:35, 13.69s/it]epoch: 3 	 dev-loss: 0.44717392325401306 	 dev-auc: 0.8224822332282662
-epoch: 3 	 train-loss: 0.44285422563552856
- 40%|████      | 4/10 [00:54<01:22, 13.68s/it]epoch: 4 	 dev-loss: 0.43658357858657837 	 dev-auc: 0.8214944687788502
-epoch: 4 	 train-loss: 0.44103729724884033
- 50%|█████     | 5/10 [01:08<01:08, 13.69s/it]epoch: 5 	 dev-loss: 0.44030654430389404 	 dev-auc: 0.8221365481418599
-early break
- 50%|█████     | 5/10 [01:14<01:14, 15.00s/it]
-epoch: 5 	 test-loss: 0.43069425225257874 	 test-auc: 0.8382224503780313
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=4-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1049
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6468712091445923 	 dev-auc: 0.44227007103591487
-epoch: 0 	 train-loss: 0.4869745969772339
- 10%|█         | 1/10 [00:13<02:03, 13.71s/it]epoch: 1 	 dev-loss: 0.47977006435394287 	 dev-auc: 0.8079411196274316
-epoch: 1 	 train-loss: 0.46158280968666077
- 20%|██        | 2/10 [00:27<01:49, 13.71s/it]epoch: 2 	 dev-loss: 0.44430291652679443 	 dev-auc: 0.8161090419217363
-epoch: 2 	 train-loss: 0.45531371235847473
- 30%|███       | 3/10 [00:41<01:35, 13.71s/it]epoch: 3 	 dev-loss: 0.45603224635124207 	 dev-auc: 0.814911710353434
-early break
- 30%|███       | 3/10 [00:47<01:51, 15.89s/it]
-epoch: 3 	 test-loss: 0.45035284757614136 	 test-auc: 0.8329198755876782
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=4-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1069
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6389647126197815 	 dev-auc: 0.41051594424566484
-epoch: 0 	 train-loss: 0.48763853311538696
- 10%|█         | 1/10 [00:13<02:03, 13.72s/it]epoch: 1 	 dev-loss: 0.5974646210670471 	 dev-auc: 0.8073498896769068
-epoch: 1 	 train-loss: 0.46079879999160767
- 20%|██        | 2/10 [00:27<01:49, 13.73s/it]epoch: 2 	 dev-loss: 0.6518861651420593 	 dev-auc: 0.8026422601609207
-early break
- 20%|██        | 2/10 [00:34<02:16, 17.02s/it]
-epoch: 2 	 test-loss: 0.6419475674629211 	 test-auc: 0.8235705215186166
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=4-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1103
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7028706669807434 	 dev-auc: 0.4003804808912713
-epoch: 0 	 train-loss: 0.5009354948997498
- 10%|█         | 1/10 [00:13<02:03, 13.71s/it]epoch: 1 	 dev-loss: 0.5005648136138916 	 dev-auc: 0.7879299600322318
-epoch: 1 	 train-loss: 0.4611417353153229
- 20%|██        | 2/10 [00:27<01:49, 13.73s/it]epoch: 2 	 dev-loss: 0.47210097312927246 	 dev-auc: 0.8184296064891903
-epoch: 2 	 train-loss: 0.4564717411994934
- 30%|███       | 3/10 [00:41<01:36, 13.74s/it]epoch: 3 	 dev-loss: 0.4890908896923065 	 dev-auc: 0.8183407661363435
-early break
- 30%|███       | 3/10 [00:47<01:51, 15.92s/it]
-epoch: 3 	 test-loss: 0.4813195765018463 	 test-auc: 0.8357362005197755
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=4-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1111
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7203324437141418 	 dev-auc: 0.5611324885014087
-epoch: 0 	 train-loss: 0.4899284243583679
- 10%|█         | 1/10 [00:13<02:03, 13.75s/it]epoch: 1 	 dev-loss: 0.5691931247711182 	 dev-auc: 0.7894499223556097
-epoch: 1 	 train-loss: 0.4626702070236206
- 20%|██        | 2/10 [00:27<01:50, 13.77s/it]epoch: 2 	 dev-loss: 0.4704013764858246 	 dev-auc: 0.8117117691647084
-epoch: 2 	 train-loss: 0.4570577144622803
- 30%|███       | 3/10 [00:41<01:36, 13.77s/it]epoch: 3 	 dev-loss: 0.4568154811859131 	 dev-auc: 0.805193173216348
-epoch: 3 	 train-loss: 0.4549597501754761
- 40%|████      | 4/10 [00:55<01:22, 13.77s/it]epoch: 4 	 dev-loss: 0.4380771815776825 	 dev-auc: 0.8122047422045189
-epoch: 4 	 train-loss: 0.4525253176689148
- 50%|█████     | 5/10 [01:08<01:08, 13.77s/it]epoch: 5 	 dev-loss: 0.433374285697937 	 dev-auc: 0.813524618908656
-epoch: 5 	 train-loss: 0.451328307390213
- 60%|██████    | 6/10 [01:22<00:55, 13.78s/it]epoch: 6 	 dev-loss: 0.4329780042171478 	 dev-auc: 0.8145070581322433
-epoch: 6 	 train-loss: 0.44946789741516113
- 70%|███████   | 7/10 [01:36<00:41, 13.78s/it]epoch: 7 	 dev-loss: 0.4363242983818054 	 dev-auc: 0.8125596490234575
-early break
- 70%|███████   | 7/10 [01:42<00:44, 14.71s/it]
-epoch: 7 	 test-loss: 0.4263659417629242 	 test-auc: 0.8293420998406066
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=4-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1188
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.6306988000869751 	 dev-auc: 0.550966567452947
-epoch: 0 	 train-loss: 0.5011618733406067
- 10%|█         | 1/10 [00:13<02:04, 13.79s/it]epoch: 1 	 dev-loss: 0.74708092212677 	 dev-auc: 0.6039691895421916
-early break
- 10%|█         | 1/10 [00:20<03:02, 20.32s/it]
-epoch: 1 	 test-loss: 0.7451831698417664 	 test-auc: 0.6090372097892665
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=4-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-dataloader #batch: 1220
-  0%|          | 0/10 [00:00<?, ?it/s]epoch: 0 	 dev-loss: 0.7807908654212952 	 dev-auc: 0.32673039966209494
-epoch: 0 	 train-loss: 0.6034750938415527
- 10%|█         | 1/10 [00:13<02:05, 13.93s/it]epoch: 1 	 dev-loss: 0.5847375988960266 	 dev-auc: 0.5
-epoch: 1 	 train-loss: 0.59628826379776
- 20%|██        | 2/10 [00:27<01:51, 13.90s/it]epoch: 2 	 dev-loss: 0.5837331414222717 	 dev-auc: 0.5
-epoch: 2 	 train-loss: 0.596282958984375
- 30%|███       | 3/10 [00:41<01:37, 13.88s/it]epoch: 3 	 dev-loss: 0.5835162997245789 	 dev-auc: 0.5
-epoch: 3 	 train-loss: 0.5962830185890198
- 40%|████      | 4/10 [00:55<01:23, 13.87s/it]epoch: 4 	 dev-loss: 0.5834581255912781 	 dev-auc: 0.5
-epoch: 4 	 train-loss: 0.5962831974029541
- 50%|█████     | 5/10 [01:09<01:09, 13.86s/it]epoch: 5 	 dev-loss: 0.5834416151046753 	 dev-auc: 0.5
-epoch: 5 	 train-loss: 0.5962831974029541
- 60%|██████    | 6/10 [01:23<00:55, 13.85s/it]epoch: 6 	 dev-loss: 0.5834367871284485 	 dev-auc: 0.5
-epoch: 6 	 train-loss: 0.5962833166122437
- 70%|███████   | 7/10 [01:36<00:41, 13.85s/it]epoch: 7 	 dev-loss: 0.5834354162216187 	 dev-auc: 0.5
-epoch: 7 	 train-loss: 0.5962833166122437
- 80%|████████  | 8/10 [01:50<00:27, 13.84s/it]epoch: 8 	 dev-loss: 0.5834351181983948 	 dev-auc: 0.5
-epoch: 8 	 train-loss: 0.5962833166122437
- 90%|█████████ | 9/10 [02:04<00:13, 13.83s/it]epoch: 9 	 dev-loss: 0.5834349989891052 	 dev-auc: 0.5
-epoch: 9 	 train-loss: 0.5962833166122437
-100%|██████████| 10/10 [02:18<00:00, 13.85s/it]100%|██████████| 10/10 [02:18<00:00, 13.85s/it]
-epoch: 9 	 test-loss: 0.5864484310150146 	 test-auc: 0.5
-saving to : /Users/xingzhiguo/Documents/git_project/NN-verification/results/adult-v2-model_config-small-max_epoch=10-train_bs=32-random_seed=4-is_random_weight-False-race_permute=False-sex_permute=False-both_sex_race_permute=False-is_fair_rmv_sym_diff=False-is_fair_copy_sym_diff=True-is_fair_iter_copy_sym_diff=False
-Model has been converted to ONNX
-
