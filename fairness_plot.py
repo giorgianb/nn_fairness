@@ -39,6 +39,7 @@ import sys
 from itertools import chain
 from joblib import Parallel, delayed
 
+
 INTEGRATION = 'block-qhull'
 
 def set_settings():
@@ -145,7 +146,6 @@ def integrate(lpi, pdf, fixed_indices):
             A = A[:, to_keep_cols]
 
         prob += qhull_integrate_polytope(A, b)*p
-        #prob += quad_integrate_polytope(A, b)*pdf.sample(*point)
 
     return prob
 
@@ -246,14 +246,17 @@ def one_hot(hot_index, length):
 class ProbabilityDensityComputer:
     """computes probability of input at given point"""
 
-    def __init__(self, X, discrete_indices, continuous_indices, one_hot_indices, class_filter):
+    def __init__(self, X, discrete_indices, continuous_indices, one_hot_indices, fixed_indices, class_filter):
         # Assumption: One-Hot indices are contiguous in the array for a one-hot feature
+        ic(len(X))
         matches_given = np.apply_along_axis(class_filter, 1, X)
+        ic(len(X[matches_given]))
         X = X[matches_given]
 
         self.discrete_indices = tuple(discrete_indices)
         self.continuous_indices = tuple(continuous_indices)
         self.one_hot_indices = tuple(one_hot_indices)
+        self.fixed_indices = tuple(fixed_indices)
         self.continuous = [make_continuous_distribution(X[:, i]) for i in continuous_indices]
         self.discrete = [make_discrete_distribution(X[:, i]) for i in discrete_indices]
         self.one_hot = [make_one_hot_distribution(X[:, index_group]) for index_group in one_hot_indices]
@@ -296,6 +299,10 @@ class ProbabilityDensityComputer:
 
     @property
     def regions(self):
+        ic(self._regions)
+        for i, region in enumerate(self._regions):
+            ic(i, len(region))
+
         return product(*self._regions)
 
 
@@ -349,16 +356,17 @@ def run_on_model(config, model_index):
     class_2_indices = np.array(c2['indices'])
     class_2_values = np.array(c2['values'])
     def is_class_1(x):
-        return np.all(x[class_1_indices] == class_1_values)
+        return np.allclose(x[class_1_indices], class_1_values, atol=1e-1)
 
     def is_class_2(x):
-        return np.all(x[class_2_indices] == class_2_values)
+        return np.allclose(x[class_2_indices], class_2_values, atol=1e-1)
 
     class_1_prob = ProbabilityDensityComputer(
             X,
             config['discrete_indices'],
             config['continuous_indices'],
             config['one_hot_indices'],
+            config['fixed_indices'],
             is_class_1
     )
 
@@ -367,6 +375,7 @@ def run_on_model(config, model_index):
             config['discrete_indices'],
             config['continuous_indices'],
             config['one_hot_indices'],
+            config['fixed_indices'],
             is_class_2
     )
 
@@ -452,7 +461,7 @@ def run_on_model(config, model_index):
         results_dict[network_label]['Symmetric Difference'] = sum(results_dict[network_label]['Advantage'].values())
         results_dict[network_label]['AUC'] = auc
     except Exception:
-        pass
+        raise
 
     return results_dict
 
@@ -477,7 +486,8 @@ def main():
 
 
     n_models = len(config['models'])
-    results = Parallel(n_jobs=16)(delayed(run_on_model)(config, i) for i in range(n_models))
+    n_models = 2
+    results = Parallel(n_jobs=1)(delayed(run_on_model)(config, i) for i in range(n_models))
 
     results_dict = {}
     for result in results:
