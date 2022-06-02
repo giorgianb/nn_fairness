@@ -99,15 +99,20 @@ def qhull_integrate_polytope(A, b, func_to_integrate=None):
     try:
         vertices = get_A_b_vertices(A, b)
     except Exception:
-        poly = Polytope(A, b)
-        vertices = extreme(poly)
+        try:
+            poly = Polytope(A, b)
+            vertices = extreme(poly)
+        except Exception:
+            vertices = None
 
     if vertices is None:
         return 0
 
-    hull = ConvexHull(vertices)
-
-    return hull.volume
+    try:
+        hull = ConvexHull(vertices)
+        return hull.volume
+    except Exception:
+        return 0
 
 def quad_integrate_glpk_lp(glpk_lp_instance, func_to_integrate=None):
     """use scipy.quad to integrate a function over a polytope domain
