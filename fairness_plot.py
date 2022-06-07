@@ -4,6 +4,7 @@ Nov 2021, Stanley Bak
 """
 
 import numpy as np
+import time
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -137,6 +138,8 @@ def integrate(lpi, pdf, fixed_indices):
                 point.append(p)
 
         p = pdf.sample(*point)
+        # For volumetric fairness
+        #p = 1
         if p == 0:
             continue
 
@@ -387,6 +390,7 @@ def run_on_model(config, model_index):
 
     lpi_polys = []
     total_probabilities = []
+    total_time = 0
     for i, (init, prob, label) in enumerate(zip(inits, probs, labels)):
         lpi_polys.append([])
 
@@ -394,7 +398,10 @@ def run_on_model(config, model_index):
         for hot_indices in product(*config['one_hot_indices']):
             init_box = np.array(init, dtype=np.float32)
             init_box[list(hot_indices)] = 1
+            t1 = time.perf_counter()
             res = enumerate_network(init_box, network)
+            t2 = time.perf_counter()
+            total_time += (t2 - t1)
             result_str = res.result_str
             assert result_str == "none"
 
@@ -453,6 +460,7 @@ def run_on_model(config, model_index):
                 print(f"[{(model_index, network_label)}] {label_0} advantage over {label_1}: {total_probability - adv_prob}")
                 print(f"[{(model_index, network_label)}] {label_0} preference over {label_1}: {total_probability - pref_prob}")
         results_dict[network_label]['Symmetric Difference'] = sum(results_dict[network_label]['Advantage'].values())
+        results_dict[network_label]['Net Preference'] = sum(map(lambda x: max(x, 0), results_dict[network_label]['Advantage'].values()))
         results_dict[network_label]['AUC'] = auc
     except Exception:
         raise
@@ -481,6 +489,8 @@ def main():
 
     n_models = len(config['models'])
     results = Parallel(n_jobs=16)(delayed(run_on_model)(config, i) for i in range(n_models))
+    #print(sum(results))
+    #return 
 
     results_dict = {}
     for result in results:
@@ -488,6 +498,7 @@ def main():
             results_dict[k] = v
 
     with open(sys.argv[2], 'w') as handle:
+        print(f"Saving result to: {sys.argv[2]}")
         json.dump(results_dict, handle)
 
 
