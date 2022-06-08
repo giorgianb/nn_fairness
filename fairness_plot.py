@@ -1,8 +1,3 @@
-"""
-fairness analyzer exploration using nnenum
-Nov 2021, Stanley Bak
-"""
-
 import numpy as np
 import time
 
