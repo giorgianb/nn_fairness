@@ -1,8 +1,4 @@
-"""
-example code computing volume from h-poly
 
-Stanley Bak, Nov 2021
-"""
 
 # pip3 install polytope
 
