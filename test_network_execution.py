@@ -1,9 +1,4 @@
-"""
-fairness analyzer exploration using nnenum
-test the networks
 
-Nov 2021, Stanley Bak
-"""
 
 from itertools import chain
 
