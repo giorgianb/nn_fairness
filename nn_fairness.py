@@ -247,6 +247,9 @@ class ProbabilityDensityComputer:
     def __init__(self, X, discrete_indices, continuous_indices, one_hot_indices, fixed_indices, class_filter):
         # Assumption: One-Hot indices are contiguous in the array for a one-hot feature
         matches_given = np.apply_along_axis(class_filter, 1, X)
+        if np.sum(matches_given) == 0:
+            print("warning: no instance of class found.", file=sys.stderr)
+
         X = X[matches_given]
 
         self.discrete_indices = tuple(discrete_indices)
@@ -334,6 +337,43 @@ def get_bounding_box(lpi):
 
 def bounding_boxes_overlap(bb0, bb1):
     return not (np.any(bb0[1, :] < bb1[0, :]) or np.any(bb1[1, :] < bb0[0, :]))
+
+def load_class_prob(config):
+    with open(config['train_data_path'], 'rb') as f:
+        data_dict = pickle.load(f)
+        X = data_dict['X_train']
+
+    c1 = config['class_1']
+    c2 = config['class_2']
+    class_1_indices = np.array(c1['indices'])
+    class_1_values = np.array(c1['values'])
+    class_2_indices = np.array(c2['indices'])
+    class_2_values = np.array(c2['values'])
+    def is_class_1(x):
+        return np.allclose(x[class_1_indices], class_1_values, atol=1e-1)
+
+    def is_class_2(x):
+        return np.allclose(x[class_2_indices], class_2_values, atol=1e-1)
+
+    class_1_prob = ProbabilityDensityComputer(
+            X,
+            config['discrete_indices'],
+            config['continuous_indices'],
+            config['one_hot_indices'],
+            config['fixed_indices'],
+            is_class_1
+    )
+
+    class_2_prob = ProbabilityDensityComputer(
+            X,
+            config['discrete_indices'],
+            config['continuous_indices'],
+            config['one_hot_indices'],
+            config['fixed_indices'],
+            is_class_2
+    )
+
+    return class_1_prob, class_2_prob
 
 def run_on_model(config, model_index):
     set_settings()
@@ -483,9 +523,13 @@ def main():
 
 
     n_models = len(config['models'])
-    results = Parallel(n_jobs=16)(delayed(run_on_model)(config, i) for i in range(n_models))
-    #print(sum(results))
-    #return 
+    results = []
+    for i in range(n_models):
+        results.append(run_on_model(config, i))
+
+    #results = Parallel(n_jobs=2)(delayed(run_on_model)(config, i) for i in range(n_models))
+    ##print(sum(results))
+    ##return 
 
     results_dict = {}
     for result in results:
