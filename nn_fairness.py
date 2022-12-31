@@ -15,9 +15,6 @@ from nnenum.lpinstance import LpInstance
 from scipy.optimize import linprog
 
 import glpk_util
-from compute_volume import quad_integrate_glpk_lp, rand_integrate_polytope, quad_integrate_polytope, qhull_integrate_polytope
-
-
 from icecream import ic
 import os.path
 import pickle
@@ -32,8 +29,9 @@ from collections import defaultdict
 
 import swiglpk as glpk
 import sys
-from itertools import chain
 from joblib import Parallel, delayed
+import quad
+from prob import ProbabilityDensityComputer
 
 
 INTEGRATION = 'block-qhull'
@@ -61,244 +59,6 @@ def init_plot():
 
     #matplotlib.use('TkAgg') # set backend
     plt.style.use(['bmh', 'bak_matplotlib.mlpstyle'])
-
-def integrate(lpi, pdf, fixed_indices):
-    prob = 0
-
-    A_lpi = lpi.get_constraints_csr().toarray()
-    b_lpi = lpi.get_rhs()
-    lpi_copy = LpInstance(lpi)
-   
-    for region in pdf.regions:
-        A = A_lpi.copy()
-        b = b_lpi.copy()
-        # check if it's feasible before computing volume
-        col_index = 0
-        A_col_index = 0
-        for (lbound, ubound) in region:
-            if lbound == ubound and type(lbound) != tuple:
-                if col_index not in fixed_indices:
-                    glpk.glp_set_col_bnds(lpi_copy.lp, A_col_index + 1, glpk.GLP_FX, lbound, lbound) # needs: import swiglpk as glpk
-                    A_col_index += 1
-                col_index += 1
-            # Handle one-hot type
-            elif type(lbound) == tuple:
-                for val in lbound:
-                    if col_index not in fixed_indices:
-                        glpk.glp_set_col_bnds(lpi_copy.lp, A_col_index + 1, glpk.GLP_FX, val, val) # needs: import swiglpk as glpk
-                        A_col_index += 1
-                    col_index += 1
-            else:
-                if col_index not in fixed_indices:
-                    glpk.glp_set_col_bnds(lpi_copy.lp, A_col_index + 1, glpk.GLP_DB, lbound, ubound) # needs: import swiglpk as glpk
-                    A_col_index += 1
-                col_index += 1
-
-        feasible = lpi_copy.is_feasible()
-        if not feasible:
-            continue
-
-        point = []
-        to_eliminate_cols = []
-        to_eliminate_vals = []
-        to_keep_cols = []
-        col_index = 0
-        A_col_index = 0
-        for i, (lbound, ubound) in enumerate(region):
-            p = lbound if lbound == ubound else (lbound + ubound) / 2
-            if lbound == ubound and type(p) != tuple:
-                if col_index not in fixed_indices:
-                    to_eliminate_cols.append(A_col_index)
-                    to_eliminate_vals.append(lbound)
-                    A_col_index += 1
-                col_index += 1
-                point.append(p)
-            elif type(p) == tuple:
-                for val in p:
-                    if col_index not in fixed_indices:
-                        to_eliminate_cols.append(A_col_index)
-                        to_eliminate_vals.append(val)
-                        A_col_index += 1
-                    col_index += 1
-                point.extend(p)
-            else:
-                row = np.zeros((1, A.shape[1]))
-                row[0, A_col_index] = 1
-                A = np.concatenate((A, row, -row), axis=0)
-                b = np.append(b, (ubound, -lbound))
-                if col_index not in fixed_indices:
-                    to_keep_cols.append(A_col_index)
-                    A_col_index += 1
-                col_index += 1
-                point.append(p)
-
-        p = pdf.sample(*point)
-        # For volumetric fairness
-        #p = 1
-        if p == 0:
-            continue
-
-        if len(to_eliminate_cols) > 0:
-            to_eliminate_vals = np.array(to_eliminate_vals)
-            b -= A[:, to_eliminate_cols] @ to_eliminate_vals
-            A = A[:, to_keep_cols]
-
-        prob += qhull_integrate_polytope(A, b)*p
-
-    return prob
-
-
-def make_linear_interpolation_func(pts):
-    """converts a list of 2-d points to an interpolation function
-    assumes function is zero outside defined range
-    """
-
-    assert len(pts) > 1
-
-    last_x = pts[0][0]
-    
-    for x, _ in pts[1:]:
-        assert x > last_x, "first argument in pts must be strictly increasing"
-        last_x = x
-
-    def f(x):
-        """the linear interpolation function"""
-
-        assert isinstance(x, (int, float)), f"x was {type(x)}"
-
-        if x < pts[0][0] or x > pts[-1][0]:
-            rv = 0
-        else:
-            # binary search
-            a = 0
-            b = len(pts) - 1
-
-            while a + 1 != b:
-                mid = (a + b) // 2
-
-                if x < pts[mid][0]:
-                    b = mid
-                else:
-                    a = mid
-
-            # at this point, interpolate between a and b
-            a_arg = pts[a][0]
-            b_arg = pts[b][0]
-            
-            ratio = (x - a_arg) / (b_arg - a_arg) # 0=a, 1=b
-            assert 0 <= ratio <= 1
-
-            val_a = pts[a][1]
-            val_b = pts[b][1]
-            
-            rv = (1-ratio)*val_a + ratio*val_b
-
-        return rv
-
-    return f
-
-def make_continuous_distribution(data):
-    counts, boundaries = np.histogram(data, bins=10)
-    centers = (boundaries[1:] + boundaries[:-1])/2
-    distribution = np.stack((centers, counts), axis=-1)
-
-    return distribution
-
-def make_discrete_distribution(data):
-    dist = defaultdict(int)
-
-    for x in data:
-        dist[x] += 1
-
-    return dist
-
-def make_one_hot_distribution(data):
-    dist = defaultdict(int)
-
-    for x in data:
-        hot_index = np.argmax(x == 1)
-        dist[hot_index] += 1
-
-    return dist
-
-
-def make_discrete_func(dist):
-    def func(x):
-        return dist.get(x, 0)
-
-    return func
-
-def make_one_hot_func(dist):
-    def func(x):
-        hot_index = np.argmax(x == 1)
-        return dist.get(hot_index, 0)
-
-    return func
-
-def one_hot(hot_index, length):
-    h = [0]*length
-    h[hot_index] = 1
-    return tuple(h)
-
-
-class ProbabilityDensityComputer:
-    """computes probability of input at given point"""
-
-    def __init__(self, X, discrete_indices, continuous_indices, one_hot_indices, fixed_indices, class_filter):
-        # Assumption: One-Hot indices are contiguous in the array for a one-hot feature
-        matches_given = np.apply_along_axis(class_filter, 1, X)
-        if np.sum(matches_given) == 0:
-            print("warning: no instance of class found.", file=sys.stderr)
-
-        X = X[matches_given]
-
-        self.discrete_indices = tuple(discrete_indices)
-        self.continuous_indices = tuple(continuous_indices)
-        self.one_hot_indices = tuple(one_hot_indices)
-        self.fixed_indices = tuple(fixed_indices)
-        self.continuous = [make_continuous_distribution(X[:, i]) for i in continuous_indices]
-        self.discrete = [make_discrete_distribution(X[:, i]) for i in discrete_indices]
-        self.one_hot = [make_one_hot_distribution(X[:, index_group]) for index_group in one_hot_indices]
-
-        self.continuous_funcs = [make_linear_interpolation_func(d) for d in self.continuous]
-        self.discrete_funcs = [make_discrete_func(d) for d in self.discrete]
-        self.one_hot_funcs = [make_one_hot_func(d) for d in self.one_hot]
-
-        self.continuous_volumes = [quad(f, d[0][0], d[-1][0], limit=500)[0] for f, d in zip(self.continuous_funcs, self.continuous)]
-        self.discrete_volumes = [sum(f(k) for k in d.keys()) for f, d in zip(self.discrete_funcs, self.discrete)]
-        self.one_hot_volumes = [sum(f(k) for k in d.keys()) for f, d in zip(self.one_hot_funcs, self.one_hot)]
-        self.continuous_bounds = [tuple(zip(d[:, 0], d[1:, 0])) for d in self.continuous]
-        self.discrete_bounds = [[(k, k) for k in sorted(d.keys())] for d in self.discrete]
-        self.one_hot_bounds = [[(one_hot(k, len(d.keys())), one_hot(k, len(d.keys()))) for k in sorted(d.keys())] for d in self.one_hot]
-        regions = sorted(
-                chain(
-                    zip([[k] for k in continuous_indices], self.continuous_bounds),
-                    zip([[k] for k in discrete_indices], self.discrete_bounds),
-                    zip(one_hot_indices, self.one_hot_bounds)
-                )
-        )
-        self._regions = tuple(map(lambda x: x[1], regions))
-
-
-    def sample(self, *args):
-        """get probability density at a point"""
-
-        p = 1
-        x = np.array(args)
-        for func, volume, index in zip(self.continuous_funcs, self.continuous_volumes, self.continuous_indices):
-            p *= func(x[index])/volume
-
-        for func, volume, index in zip(self.discrete_funcs, self.discrete_volumes, self.discrete_indices):
-            p *= func(x[index])/volume
-
-        for func, volume, index_group in zip(self.one_hot_funcs, self.one_hot_volumes, self.one_hot_indices):
-            p *= func(x[index_group])/volume
-
-        return p
-
-    @property
-    def regions(self):
-        return product(*self._regions)
 
 
 def compute_intersection_lpi(lpi1, lpi2):
@@ -458,6 +218,7 @@ def run_on_model(config, model_index):
 
 
     print(f"[{(network_label, model_index)}] lp_polys size: {tuple(len(poly) for poly in lpi_polys)}") 
+    integrate = quad.block_qhull
     try:
         for label_0, polys_0, prob_0 in zip(labels, lpi_polys, probs):
             total_probability = 0
@@ -523,11 +284,11 @@ def main():
 
 
     n_models = len(config['models'])
-    results = []
-    for i in range(n_models):
-        results.append(run_on_model(config, i))
+    #results = []
+    #for i in range(n_models):
+    #    results.append(run_on_model(config, i))
 
-    #results = Parallel(n_jobs=2)(delayed(run_on_model)(config, i) for i in range(n_models))
+    results = Parallel(n_jobs=2)(delayed(run_on_model)(config, i) for i in range(n_models))
     ##print(sum(results))
     ##return 
 
