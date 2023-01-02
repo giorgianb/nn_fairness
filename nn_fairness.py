@@ -34,7 +34,7 @@ import quad
 from prob import ProbabilityDensityComputer
 
 
-INTEGRATION = 'block-qhull'
+integrate = quad.bounding_box
 
 def set_settings():
     """exact analysis settings"""
@@ -218,7 +218,6 @@ def run_on_model(config, model_index):
 
 
     print(f"[{(network_label, model_index)}] lp_polys size: {tuple(len(poly) for poly in lpi_polys)}") 
-    integrate = quad.block_qhull
     try:
         for label_0, polys_0, prob_0 in zip(labels, lpi_polys, probs):
             total_probability = 0
@@ -288,7 +287,7 @@ def main():
     #for i in range(n_models):
     #    results.append(run_on_model(config, i))
 
-    results = Parallel(n_jobs=2)(delayed(run_on_model)(config, i) for i in range(n_models))
+    results = Parallel(n_jobs=1)(delayed(run_on_model)(config, i) for i in range(n_models))
     ##print(sum(results))
     ##return 
 

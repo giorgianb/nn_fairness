@@ -31,6 +31,7 @@ class ProbabilityDensityComputer:
         self.discrete_volumes = [sum(f(k) for k in d.keys()) for f, d in zip(self.discrete_funcs, self.discrete)]
         self.one_hot_volumes = [sum(f(k) for k in d.keys()) for f, d in zip(self.one_hot_funcs, self.one_hot)]
         self.continuous_bounds = [tuple(zip(d[:, 0], d[1:, 0])) for d in self.continuous]
+        non_discretized_continous_bounds = [(np.min(d[:, 0]), np.max(d[:, 0])) for d in self.continuous]
         self.discrete_bounds = [[(k, k) for k in sorted(d.keys())] for d in self.discrete]
         self.one_hot_bounds = [[(one_hot(k, len(d.keys())), one_hot(k, len(d.keys()))) for k in sorted(d.keys())] for d in self.one_hot]
         regions = sorted(
@@ -40,7 +41,18 @@ class ProbabilityDensityComputer:
                     zip(one_hot_indices, self.one_hot_bounds)
                 )
         )
+
+        non_discretized_regions = sorted(
+                chain(
+                    zip([[k] for k in continuous_indices], self.continuous_bounds),
+                    zip([[k] for k in discrete_indices], self.discrete_bounds),
+                    zip(one_hot_indices, self.one_hot_bounds)
+                    )
+
+        )
         self._regions = tuple(map(lambda x: x[1], regions))
+        self._non_discretized_regions = tuple(map(lambda x: x[1], non_discretized_regions))
+
 
 
     def sample(self, *args):
@@ -63,7 +75,9 @@ class ProbabilityDensityComputer:
     def regions(self):
         return product(*self._regions)
 
-
+    @property
+    def non_discretized_regions(self):
+        return product(*self.non_discretized_regions)
 
 def make_linear_interpolation_func(pts):
     """converts a list of 2-d points to an interpolation function

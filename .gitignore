@@ -21,3 +21,4 @@ stdout.txt
 *.mp4
 NN-verification
 .ipynb_checkpoints
+.venv/
