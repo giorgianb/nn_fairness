@@ -4,22 +4,19 @@ import swiglpk as glpk
 import numpy as np
 from icecream import ic
 
-def get_bounding_box(A, b):
+def get_bounding_box(A, b, bounds):
     lpi = LpInstance()
     lpi.add_cols(list(range(A.shape[1])))
-    for row, rhs in zip(A, b):
+    for i, (row, rhs, bound) in enumerate(zip(A, b, bounds)):
         lpi.add_dense_row(row, rhs, normalize=False)
+        glpk.glp_set_col_bnds(lpi.lp, i + 1, glpk.GLP_DB, bound[0], bound[1])
 
     bb = []
     for i in range(A.shape[1]):
         v = np.zeros(A.shape[1])
         v[i] = 1
-        try:
-            min_bound = lpi.minimize(v)[i]
-            max_bound = lpi.minimize(-v)[i]
-        except RuntimeError:
-            ic(A, b)
-            raise
+        min_bound = lpi.minimize(v)[i]
+        max_bound = lpi.minimize(-v)[i]
         bb.append((min_bound, max_bound))
 
     bb = np.array(bb)
@@ -34,79 +31,60 @@ def bounding_box(lpi, pdf, fixed_indices):
     A_lpi = lpi.get_constraints_csr().toarray()
     b_lpi = lpi.get_rhs()
     lpi_copy = LpInstance(lpi)
-
    
-    for region in pdf.regions:
+    # Maybe we need a better way than this, as we are using an internal method
+    bounds = lpi._get_col_bounds()
+    for region in pdf.non_discretized_regions:
         # check if it's feasible before computing volume
         col_index = 0
         A_col_index = 0
-        for (lbound, ubound) in region:
+        point = []
+        to_eliminate_cols = []
+        to_eliminate_vals = []
+        to_keep_cols = []
+
+        # Indices to update with the computed bounding box center
+        update_indices = []
+        updated_bounds = []
+        for i, (lbound, ubound) in enumerate(region):
             # Handle Discrete Type
+            p = lbound if lbound == ubound else (lbound + ubound) / 2
             if lbound == ubound and type(lbound) != tuple:
                 if col_index not in fixed_indices:
                     glpk.glp_set_col_bnds(lpi_copy.lp, A_col_index + 1, glpk.GLP_FX, lbound, lbound) # needs: import swiglpk as glpk
+                    to_eliminate_cols.append(A_col_index)
+                    to_eliminate_vals.append(lbound)
                     A_col_index += 1
                 col_index += 1
+                point.append(p)
             # Handle one-hot type
             elif type(lbound) == tuple:
                 for val in lbound:
                     if col_index not in fixed_indices:
                         glpk.glp_set_col_bnds(lpi_copy.lp, A_col_index + 1, glpk.GLP_FX, val, val) # needs: import swiglpk as glpk
+                        to_eliminate_cols.append(A_col_index)
+                        to_eliminate_vals.append(val)
                         A_col_index += 1
                     col_index += 1
+                point.extend(p)
             else:
-                # We don't set any bounds for continuous-types in this method
+                # It's not fixed, so we sample at the center of the bounding box
                 if col_index not in fixed_indices:
+                    to_keep_cols.append(A_col_index)
+                    updated_bounds.append(bounds[A_col_index])
                     A_col_index += 1
+
+                    point.append(None)
+                    update_indices.append(i)
+                else:
+                    points.append(p)
+
                 col_index += 1
 
         feasible = lpi_copy.is_feasible()
         if not feasible:
             continue
 
-        point = []
-        to_eliminate_cols = []
-        to_eliminate_vals = []
-        to_keep_cols = []
-        col_index = 0
-        A_col_index = 0
-
-        # Indices to update with the computed bounding box center
-        update_indices = []
-        for i, (lbound, ubound) in enumerate(region):
-            p = lbound if lbound == ubound else (lbound + ubound) / 2
-            # Discrete Case
-            if lbound == ubound and type(p) != tuple:
-                if col_index not in fixed_indices:
-                    to_eliminate_cols.append(A_col_index)
-                    to_eliminate_vals.append(lbound)
-                    A_col_index += 1
-                col_index += 1
-                point.append(p)
-            # One-Hot Case
-            elif type(p) == tuple:
-                for val in p:
-                    if col_index not in fixed_indices:
-                        to_eliminate_cols.append(A_col_index)
-                        to_eliminate_vals.append(val)
-                        A_col_index += 1
-                    col_index += 1
-                point.extend(p)
-            # Continuous Case
-            else:
-                v = np.zeros(A_lpi.shape[1])
-                v[col_index] = 1
-
-                min_bound = lpi.minimize(v)[col_index]
-                max_bound = lpi.minimize(-v)[col_index]
-
-                if col_index not in fixed_indices:
-                    to_keep_cols.append(A_col_index)
-                    A_col_index += 1
-                col_index += 1
-
-                point.append(None)
-                update_indices.append(i)
 
         A = A_lpi.copy()
         b = b_lpi.copy()
@@ -115,7 +93,14 @@ def bounding_box(lpi, pdf, fixed_indices):
             b -= A[:, to_eliminate_cols] @ to_eliminate_vals
             A = A[:, to_keep_cols]
 
-        bb = get_bounding_box(A, b)
+        try:
+            bb = get_bounding_box(A, b, updated_bounds)
+        except RuntimeError:
+            ic(to_eliminate_vals)
+            ic(to_eliminate_cols)
+            ic(A, b)
+            ic(A_lpi, b_lpi)
+            raise
         assert len(bb) == len(update_indices)
         for update_index, (lbound, ubound) in zip(update_indices, bb):
             point[update_index] = (lbound + ubound) / 2

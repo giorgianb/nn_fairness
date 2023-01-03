@@ -77,7 +77,7 @@ class ProbabilityDensityComputer:
 
     @property
     def non_discretized_regions(self):
-        return product(*self.non_discretized_regions)
+        return product(*self._non_discretized_regions)
 
 def make_linear_interpolation_func(pts):
     """converts a list of 2-d points to an interpolation function

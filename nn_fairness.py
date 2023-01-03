@@ -283,13 +283,7 @@ def main():
 
 
     n_models = len(config['models'])
-    #results = []
-    #for i in range(n_models):
-    #    results.append(run_on_model(config, i))
-
-    results = Parallel(n_jobs=1)(delayed(run_on_model)(config, i) for i in range(n_models))
-    ##print(sum(results))
-    ##return 
+    results = Parallel(n_jobs=8)(delayed(run_on_model)(config, i) for i in range(n_models))
 
     results_dict = {}
     for result in results:
