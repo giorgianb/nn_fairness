@@ -314,7 +314,7 @@ class FairnessCalculator:
     def from_onnx_file(filename: str):
         return FairnessCalculator(load_onnx_network_optimized(filename))
 
-    def compute(self, classes: Union[Mapping, Sequence]):
+    def __call__(self, classes: Union[Mapping, Sequence]):
         if isinstance(classes, Sequence):
             classes_dict = {}
             for i, init_region in enumerate(classes):
@@ -481,6 +481,6 @@ class FairnessMetrics:
 
                 if label is not None:
                     result = (*result, f'{label_1} individuals are considered {label} at {result[0]/result[1]*100}% of the rate of {label_0} individuals')
-                preference[(label_0, label_1)] = result
+                preference[(label_1, label_0)] = result
 
         return preference
