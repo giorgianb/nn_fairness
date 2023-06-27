@@ -33,8 +33,14 @@ from joblib import Parallel, delayed
 import quad
 from prob import ProbabilityDensityComputer
 
+from nnenum.network import NeuralNetwork
+from typing import Union
 
-integrate = quad.bounding_box
+from collections import namedtuple
+from collections.abc import Mapping, Sequence
+
+
+integrate = quad.block_qhull
 
 def set_settings():
     """exact analysis settings"""
@@ -297,3 +303,188 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+InputConfig = namedtuple("InputConfig", ("one_hot_indices", "discrete_indices"))
+
+class FairnessCalculator:
+    def __init__(self, network: NeuralNetwork, input_config: InputConfig):
+        self.network = network
+        self.input_config = input_config
+
+    @staticmethod
+    def from_onnx_file(filename: str, input_config: InputConfig):
+        return FairnessCalculator(load_onnx_network_optimized(filename), input_config)
+
+    def forward(self, classes: Union[Mapping, Sequence]):
+        if isinstance(classes, Sequence):
+            classes_dict = {}
+            for i, init_region in enumerate(classes):
+                classes_dict[i] = init_region
+            classes = classes_dict
+
+        lpi_polys = {}
+        fixed_indices = {}
+        for class_label, init_box in classes.items():
+            lpi_polys[class_label] = []
+            for hot_indices in product(*self.input_config.one_hot_indices):
+                # These are the current indices that are hot
+                init_box = self._fix_hot_indices(init_box, hot_indices)
+                fixed_indices[class_label] = self._compute_fixed_indices(init_box, self.input_config.one_hot_indices)
+                res = enumerate_network(init_box, self.network)
+                for star in res.stars:
+                    row = star.a_mat[0]
+                    bias = star.bias[0]
+
+                    # TODO: look into why we do this
+                    star.lpi.add_dense_row(row, -bias)
+                    #star.lpi.add_dense_row(-2*row, -bias - 1)
+
+                    if star.lpi.is_feasible():
+                        bounding_box = get_bounding_box(star.lpi)
+                        lpi_polys[class_label].append((star.lpi, bounding_box))
+
+        return FairnessMetrics(lpi_polys, fixed_indices)
+
+    @staticmethod
+    def _fix_hot_indices(init_box, hot_indices: Sequence[int]):
+        fixed_box = init_box.copy()
+        for i, hot_index in enumerate(hot_indices):
+            fixed_box[i] = hot_index
+        return fixed_box
+
+    def _compute_fixed_indices(self, init_box, one_hot_indices: Sequence[int]):
+        fixed_indices = []
+        fixed_indices = list(one_hot_indices)
+        for i, (l, u) in enumerate(init_box):
+            if l == u:
+                fixed_indices.append(i)
+        return fixed_indices
+
+class FairnessMetrics:
+    def __init__(self, lpi_polys: Mapping, fixed_indices: Mapping):
+        self.lpi_polys = lpi_polys
+        self.fixed_indices = dict(fixed_indices)
+
+    # Advantage: percentage of whites not accepted as blacks
+    def advantage(self, probs: Union[Mapping, Sequence], label=None):
+        if isinstance(probs, Sequence):
+            probs_dict = {}
+            for i, prob in enumerate(probs):
+                probs_dict[i] = prob
+            probs = probs_dict
+
+        advantage = {}
+        for label_0, prob_0 in probs.items():
+            total_probability = 0
+            polys_0 = self.lpi_polys[label_0]
+
+            for lpi, bounding_box in polys_0:
+                total_probability += integrate(lpi, prob_0, self.fixed_indices[label_0])
+
+            for label_1, prob_1 in probs.items():
+                if label_0 == label_1:
+                    continue
+
+                polys_1 = self.lpi_polys[label_1]
+                adv_prob = 0
+                for (lpi_0, bb_0), (lpi_1, bb_1) in product(polys_0, polys_1):
+                    # TODO: fix. This does not work correctly!!
+                    #if not bounding_boxes_overlap(bb_0, bb_1):
+                    #    continue
+
+                    intersection_lpi = compute_intersection_lpi(lpi_0, lpi_1)
+
+                    if intersection_lpi.is_feasible():
+                        adv_prob += integrate(intersection_lpi, prob_0, self.fixed_indices[label_0])
+                if label is None:
+                    result = (total_probability - adv_prob, total_probability)
+                else:
+                    diff = total_probability - adv_prob
+                    result = (total_probability - adv_prob, total_probability, f'{diff*100}% of all {label_0} individuals would have not been classified {label} if only they had been {label_1}')
+                advantage[(label_0, label_1)] = result
+
+        return advantage
+
+    # Disadvantage: Proportion of blacks that would have been accepted as white
+    def disadvantage(self, probs: Union[Mapping, Sequence], label=None):
+        if isinstance(probs, Sequence):
+            probs_dict = {}
+            for i, prob in enumerate(probs):
+                probs_dict[i] = prob
+            probs = probs_dict
+
+        counterfactual_probabilities = {}
+        disadvantage = {}
+
+
+        for label_0, prob_0 in probs.items():
+            polys_0 = self.lpi_polys[label_0]
+
+            for label_1, prob_1 in probs.items():
+                if label_0 == label_1:
+                    continue
+
+                # We calculate the acceptance proportion evaluating it using the rules of the other race
+                counterfactual_probability = 0
+                for lpi, bounding_box in polys_0:
+                    counterfactual_probability += integrate(lpi, prob_1, self.fixed_indices[label_1])
+
+
+                polys_1 = self.lpi_polys[label_1]
+                disadv_prob = 0
+                # We calculate how many are accepted under both rules
+                for (lpi_0, bb_0), (lpi_1, bb_1) in product(polys_0, polys_1):
+                    #if not bounding_boxes_overlap(bb_0, bb_1):
+                    #    continue
+
+                    intersection_lpi = compute_intersection_lpi(lpi_0, lpi_1)
+
+                    if intersection_lpi.is_feasible():
+                        disadv_prob += integrate(intersection_lpi, prob_1, self.fixed_indices[label_1])
+                if label is None:
+                    result = (counterfactual_probability - disadv_prob, counterfactual_probability)
+                else:
+                    diff = counterfactual_probability - disadv_prob
+                    result = (counterfactual_probability - disadv_prob, counterfactual_probability, f'{diff*100}% of all {label_1} individuals would have been classified {label} if only they had been {label_0}')
+
+                disadvantage[(label_1, label_0)] = result
+
+        return disadvantage
+
+    def preference(self, probs: Union[Mapping, Sequence], label=None):
+        if isinstance(probs, Sequence):
+            probs_dict = {}
+            for i, prob in enumerate(probs):
+                probs_dict[i] = prob
+            probs = probs_dict
+
+        preference = {}
+        for label_0, prob_0 in probs.items():
+            polys_0 = self.lpi_polys[label_0]
+            total_probability = 0
+
+            for lpi, bounding_box in polys_0:
+                total_probability += integrate(lpi, prob_0, self.fixed_indices[label_0])
+
+            for label_1, prob_1 in probs.items():
+                if label_0 == label_1:
+                    continue
+
+                polys_1 = self.lpi_polys[label_1]
+                pref_prob = 0
+                for lpi, bounding_box in polys_1:
+                    pref_prob += integrate(lpi, prob_1, self.fixed_indices[label_1])
+
+                if total_probability == 0:
+                    if pref_prob == 0:
+                        result = (1, total_probability)
+                    else:
+                        result = (np.inf, total_probability)
+                else:
+                    result = (pref_prob, total_probability)
+
+                if label is not None:
+                    result = (*result, f'{label_1} individuals are considered {label} at {result[0]/result[1]*100}% of the rate of {label_0} individuals')
+                preference[(label_0, label_1)] = result
+
+        return preference
