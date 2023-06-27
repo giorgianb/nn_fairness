@@ -307,13 +307,12 @@ if __name__ == "__main__":
 InputConfig = namedtuple("InputConfig", ("one_hot_indices", "discrete_indices"))
 
 class FairnessCalculator:
-    def __init__(self, network: NeuralNetwork, input_config: InputConfig):
+    def __init__(self, network: NeuralNetwork):
         self.network = network
-        self.input_config = input_config
 
     @staticmethod
-    def from_onnx_file(filename: str, input_config: InputConfig):
-        return FairnessCalculator(load_onnx_network_optimized(filename), input_config)
+    def from_onnx_file(filename: str):
+        return FairnessCalculator(load_onnx_network_optimized(filename))
 
     def forward(self, classes: Union[Mapping, Sequence]):
         if isinstance(classes, Sequence):
@@ -324,12 +323,10 @@ class FairnessCalculator:
 
         lpi_polys = {}
         fixed_indices = {}
-        for class_label, init_box in classes.items():
+        for class_label, boxes in classes.items():
             lpi_polys[class_label] = []
-            for hot_indices in product(*self.input_config.one_hot_indices):
-                # These are the current indices that are hot
-                init_box = self._fix_hot_indices(init_box, hot_indices)
-                fixed_indices[class_label] = self._compute_fixed_indices(init_box, self.input_config.one_hot_indices)
+            for init_box in boxes:
+                fixed_indices[class_label] = self._compute_fixed_indices(init_box)
                 res = enumerate_network(init_box, self.network)
                 for star in res.stars:
                     row = star.a_mat[0]
@@ -352,9 +349,8 @@ class FairnessCalculator:
             fixed_box[i] = hot_index
         return fixed_box
 
-    def _compute_fixed_indices(self, init_box, one_hot_indices: Sequence[int]):
+    def _compute_fixed_indices(self, init_box):
         fixed_indices = []
-        fixed_indices = list(one_hot_indices)
         for i, (l, u) in enumerate(init_box):
             if l == u:
                 fixed_indices.append(i)
