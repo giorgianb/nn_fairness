@@ -74,7 +74,7 @@ class InputSpecification:
 
                 self.one_hot_variables[v.label].append(i)
 
-    def get_class(self, **kwargs):
+    def get(self, **kwargs):
         box = np.zeros((self.n_variables, 2), dtype=np.float32)
         for k, v in self.variables.items():
             if isinstance(v, Continuous):
@@ -102,7 +102,3 @@ class InputSpecification:
             boxes.append(box_copy)
 
         return InputClass(tuple(boxes))
-
-                
-
-
