@@ -4,6 +4,7 @@ import dataclasses
 from collections.abc import Sequence
 import numpy as np
 from itertools import product
+import warnings
 
 @dataclass(frozen=True)
 class Continuous:
@@ -39,7 +40,7 @@ class InputClass:
             for j in range(i + 1, len(other.boxes)):
                 intersection = np.concatenate((np.maximum(self.boxes[i][:, 0], other.boxes[j][:, 0])[:, None], np.minimum(self.boxes[i][:, 1], other.boxes[j][:, 1])[:, None]), axis=1)
                 if np.all(intersection[:, 0] <= intersection[:, 1]):
-                    print("Warning: regions are not mutually exclusive")
+                    warnings.warn("regions are not mutually exclusive")
 
         return InputClass(tuple(self.boxes) + tuple(other.boxes))
 
@@ -74,7 +75,7 @@ class InputSpecification:
                 self.one_hot_variables[v.label].append(i)
 
     def get_class(self, **kwargs):
-        box = np.zeros((self.n_variables, 2))
+        box = np.zeros((self.n_variables, 2), dtype=np.float32)
         for k, v in self.variables.items():
             if isinstance(v, Continuous):
                 box[self.continuous_indices[k]] = [v.min, v.max]

@@ -314,7 +314,7 @@ class FairnessCalculator:
     def from_onnx_file(filename: str):
         return FairnessCalculator(load_onnx_network_optimized(filename))
 
-    def forward(self, classes: Union[Mapping, Sequence]):
+    def compute(self, classes: Union[Mapping, Sequence]):
         if isinstance(classes, Sequence):
             classes_dict = {}
             for i, init_region in enumerate(classes):
