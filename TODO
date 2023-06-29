@@ -36,6 +36,9 @@
 3. Check that Lawrence algorithm assumptions are valid
 4. Set up benchmark comparing volumes calculated with our method with "true" volume
 5. Use cddlib to get vertices instead of qhull
+	- cddlib uses the double description method, which is more efficient
+	- If we reduce the half-space before passing it to cddlib, we can select the tightest constraints
+	  by choosing the d tightest constraints instead of having to use isclose
 
 
 
