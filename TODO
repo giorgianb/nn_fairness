@@ -1,5 +1,41 @@
+✔
 # TODO
-- Create a class to allow for enumeration and computation of metrics
+- Create a class to allow for enumeration and computation of metrics ✔
 - Improve calculation of volume
 - Add definition of disadvantage to our fairness overview
+- Create elegant input configuration ✔
+- Create elegant class specification from the input configuration 
+	- Add support for union assuming mutually exclusive inputs ✔
+	- Add support  for intersection ✔
+	- Add support for negation
+- Create elegant probability distribution
+	- Piecewise-linear (from histogram)
+	- Bayesian (fitting logistics model)
+
+- Figure out why bounding box code does not work ✔
+- Maybe rename input_spec.get to input_spec.specify or input_spec.define
+
+
+## Integral Code
+- Take advantage that of the fact that extreme() generates a matrix with redundant constraints removed ✔
+- Steps for vertex enumeration 
+1. Translate chebyshev center of Polytope to origin
+2. Find the quickhull of the translated polytope
+3. Reduce the quickhull (remove redundant constraints)
+4. A and b are the representation of the polytope in the dual space
+
+## Plan of attack
+1. Figure out how to determine which constraints from quickhull are active ✔
+2. Return active constraints ✔
+
+
+
+# Integral TODO
+1. Figure out how to handle discrete inputs for lawrence volume computation
+2. Ensure that when we are setting the column bounds, this get translated when we compute extreme()
+3. Check that Lawrence algorithm assumptions are valid
+4. Set up benchmark comparing volumes calculated with our method with "true" volume
+5. Use cddlib to get vertices instead of qhull
+
+
 
