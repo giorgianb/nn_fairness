@@ -39,8 +39,10 @@ from typing import Union
 from collections import namedtuple
 from collections.abc import Mapping, Sequence
 
+from quad import integrate
 
-integrate = quad.block_qhull
+quad.volume = quad.qhull_integrate_polytope
+quad.extreme = quad.qhull_extreme
 
 def set_settings():
     """exact analysis settings"""
@@ -102,7 +104,7 @@ def get_bounding_box(lpi):
     return np.array(bb)
 
 def bounding_boxes_overlap(bb0, bb1):
-    return not (np.any(bb0[1, :] < bb1[0, :]) or np.any(bb1[1, :] < bb0[0, :]))
+    return (np.any(bb0[1, :] < bb1[0, :]) or np.any(bb1[1, :] < bb0[0, :]))
 
 def load_class_prob(config):
     with open(config['train_data_path'], 'rb') as f:
@@ -329,6 +331,7 @@ class FairnessCalculator:
                 fixed_indices[class_label] = self._compute_fixed_indices(init_box)
                 res = enumerate_network(init_box, self.network)
                 for star in res.stars:
+                    #print(f'{star.a_mat.shape=}, {star.bias.shape=}')
                     row = star.a_mat[0]
                     bias = star.bias[0]
 
@@ -385,8 +388,8 @@ class FairnessMetrics:
                 adv_prob = 0
                 for (lpi_0, bb_0), (lpi_1, bb_1) in product(polys_0, polys_1):
                     # TODO: fix. This does not work correctly!!
-                    #if not bounding_boxes_overlap(bb_0, bb_1):
-                    #    continue
+                    if not bounding_boxes_overlap(bb_0, bb_1):
+                        continue
 
                     intersection_lpi = compute_intersection_lpi(lpi_0, lpi_1)
 
@@ -430,8 +433,8 @@ class FairnessMetrics:
                 disadv_prob = 0
                 # We calculate how many are accepted under both rules
                 for (lpi_0, bb_0), (lpi_1, bb_1) in product(polys_0, polys_1):
-                    #if not bounding_boxes_overlap(bb_0, bb_1):
-                    #    continue
+                    if not bounding_boxes_overlap(bb_0, bb_1):
+                        continue
 
                     intersection_lpi = compute_intersection_lpi(lpi_0, lpi_1)
 
