@@ -1,6 +1,112 @@
 import numpy as np
 
 from polytope.quickhull import distance, is_neighbor
+import numpy as np
+from polytope.polytope import reduce, cheby_ball, Region, ABS_TOL, is_fulldim, Polytope
+
+def extreme(poly1):
+    """Compute the extreme points of a _bounded_ polytope
+    @param poly1: Polytope in dimension d
+    @return: A (N x d) numpy array containing the N vertices of poly1
+    """
+    if poly1.vertices is not None:
+        # In case vertices already stored
+        return poly1.vertices
+    V = np.array([])
+    R = np.array([])
+    if isinstance(poly1, Region):
+        raise Exception("extreme: not executable for regions")
+    # `poly1` is a `Polytope`
+    # TODO: change so that we assume that poly1 is already reduced
+    poly1 = reduce(poly1)  # Need to have polytope non-redundant!
+    if not is_fulldim(poly1):
+        return None
+    # `poly1` isn't flat
+    A = poly1.A.copy()
+    b = poly1.b.copy()
+    sh = np.shape(A)
+    nc = sh[0]
+    nx = sh[1]
+    # distinguish cases by dimension
+    # TODO: add support for finding active dimensions in the other cases
+    if nx == 1 and False:
+        # Polytope is a 1-dim line
+        for ii in range(nc):
+            V = np.append(V, b[ii] / A[ii])
+        if len(A) == 1:
+            R = np.append(R, 1)
+            raise Exception("extreme: polytope is unbounded")
+    elif nx == 2 and False:
+        # Polytope is 2D
+        alf = np.angle(A[:, 0] + 1j * A[:, 1])
+        I = np.argsort(alf)
+        H = np.vstack([A, A[0, :]])
+        K = np.hstack([b, b[0]])
+        I = np.hstack([I, I[0]])
+        for ii in range(nc):
+            HH = np.vstack([H[I[ii], :], H[I[ii + 1], :]])
+            KK = np.hstack([K[I[ii]], K[I[ii + 1]]])
+            if np.linalg.cond(HH) == np.inf:
+                R = np.append(R, 1)
+                raise Exception("extreme: polytope is unbounded")
+            else:
+                try:
+                    v = np.linalg.solve(HH, KK)
+                except Exception:
+                    msg = 'Finding extreme points failed, '
+                    msg += 'Check if any unbounded Polytope '
+                    msg += 'is causing this.'
+                    raise Exception(msg)
+                if len(V) == 0:
+                    V = np.append(V, v)
+                else:
+                    V = np.vstack([V, v])
+    else:
+        # General nD method,
+        # solve a vertex enumeration problem for
+        # the dual polytope
+        rmid, xmid = cheby_ball(poly1)
+        A = poly1.A.copy()
+        b = poly1.b.copy()
+        sh = np.shape(A)
+        Ai = np.zeros(sh)
+        for ii in range(sh[0]):
+            Ai[ii, :] = A[ii, :] / (b[ii] - np.dot(A[ii, :], xmid))
+        #print(f"{Ai=}")
+        p, active = qhull(Ai)
+        #print(f'{p.A.shape=}')
+        Q = reduce(p)
+        #print(f"{Q.vertices=}")
+        #print(f"{Q.A.shape=}")
+        #print(f"{Q.b=}")
+        if not is_fulldim(Q):
+            return None
+        # `Q` isn't flat
+        H = Q.A
+        K = Q.b
+        sh = np.shape(H)
+        nx = sh[1]
+        V = np.zeros(sh)
+        for iv in range(sh[0]):
+            for ix in range(nx):
+                V[iv, ix] = H[iv, ix] / K[iv] + xmid[ix]
+    a = V.size / nx
+    if not a.is_integer():
+        raise AssertionError(a)
+    a = int(a)
+    poly1.vertices = V.reshape((a, nx))
+    return poly1.vertices, active
+
+def qhull(vertices, abs_tol=ABS_TOL):
+    """Use quickhull to compute a convex hull.
+    @param vertices: A N x d array containing N vertices in dimension d
+    @return: L{Polytope} describing the convex hull
+    """
+    A, b, vert, active = quickhull(vertices, abs_tol=abs_tol)
+    if A.size == 0:
+        return Polytope(), None
+    return Polytope(A, b, minrep=True, vertices=vert), active
+
 class Facet(object):
     """Face of dimension n-1 of n-dimensional polyhedron.
     A class describing a facet (n-1 dimensional face) of an

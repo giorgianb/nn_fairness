@@ -8,9 +8,13 @@ import numpy as np
 
 import swiglpk as glpk
 import glpk_util
-from polytope import Polytope, extreme
+from polytope import Polytope, extreme, is_fulldim
 from scipy.spatial import ConvexHull
 from icecream import ic
+from polytope.polytope import reduce
+import math
+
+import quickhull
 #import cdd
 
 def rand_integrate_polytope(A, b, func_to_integrate=None, samples=100000):
@@ -106,6 +110,7 @@ def qhull_integrate_polytope(A, b, func_to_integrate=None):
             vertices = None
 
     if vertices is None:
+        print("Vertices is none!!")
         return 0
 
     try:
@@ -186,3 +191,115 @@ class LpIntegrator:
         glpk.glp_delete_prob(lp)
 
         return lb, ub
+
+def lawrence_integrate_polytope(A, b):
+    from quickhull import extreme
+    N = A.shape[1]
+    M = A.shape[0]
+    Ac = np.concatenate((A, -np.identity(N)), axis=0)
+    bc = np.concatenate((b, np.zeros(N)))
+    poly = Polytope(Ac, bc)
+    vertices = extreme(poly)
+    
+    slack = np.identity(M)
+    last_row = np.zeros((1, A.shape[1] + M + 1))
+    tableu = np.concatenate((A[:M], slack, b.reshape(b.shape[0], 1)[:M]), axis=-1)
+    tableu = np.concatenate((tableu, last_row), axis=0)
+    tableu[-1, :N] = -1
+
+    volume = 0
+    for p in vertices:
+        active = np.isclose((A @ p)[:M], b[:M])
+        
+        # Find the basic and non-basic variables
+        basic_indices = np.arange(M)
+        basic_indices[np.logical_not(active)] += N # These are the basic slack variables
+        basic_indices[active] = np.arange(N)[np.logical_not(np.isclose(p, 0))] # These are the basic non-slack variables
+        basic_indices = np.sort(basic_indices)
+        possible_indices = np.arange(M + N)
+        unused = np.ones(M + N).astype(np.bool_)
+        unused[basic_indices] = False
+
+        non_basic_indices = possible_indices[unused]
+
+        δ_v = abs(np.linalg.det(tableu[:M, basic_indices]))
+
+        # So now it's for the constraints that are active that we need to figure out
+        # Which is a NB variable
+        c = tableu[-1, :M+N]
+        c_N = c[non_basic_indices]
+        c_B = c[basic_indices]
+        # Matrix for basic  variables
+
+        A_B = tableu[:M, basic_indices]
+
+        # Matrix for non-basic variables
+        A_N = tableu[:M, non_basic_indices]
+
+        # Reduced cost
+        cost = c_N - c_B @ np.linalg.inv(A_B) @ A_N
+        f_v = np.sum(p)
+        volume += f_v**N/np.prod(cost) * 1/δ_v
+    volume /= math.factorial(N)
+    return volume
+
+def lawrence_integrate_polytope(A, b):
+    #keep_indices = [i for i in range(A.shape[1]) if i not in fixed_indices]
+    #b -= A[:, fixed_indices] @ b[fixed_indices]
+    #A 
+    N = A.shape[1]
+    M = A.shape[0]
+    Ac = np.concatenate((A, -np.identity(N)), axis=0)
+    bc = np.concatenate((b, np.zeros(N)))
+    
+    # First remove redundant constraints
+    poly = reduce(Polytope(Ac, bc))
+    vertices, active_constraints = quickhull.extreme(poly)
+    A = poly.A
+    b = poly.b
+    N = A.shape[1]
+    M = A.shape[0]
+    
+    slack = np.identity(M)
+    last_row = np.zeros((1, A.shape[1] + M + 1))
+    tableu = np.concatenate((A[:M], slack, b.reshape(b.shape[0], 1)[:M]), axis=-1)
+    tableu = np.concatenate((tableu, last_row), axis=0)
+    tableu[-1, :N] = -1
+
+    volume = 0
+    for p, active_indices in zip(vertices, active_constraints):
+        active = np.zeros(M, dtype=bool)
+        active[active_indices] = 1
+        
+        # Find the basic and non-basic variables
+        basic_indices = np.arange(M)
+        basic_indices[np.logical_not(active)] += N # These are the basic slack variables
+        #basic_indices[active] = np.arange(N)[np.logical_not(np.isclose(p, 0))] # These are the basic non-slack variables
+        basic_indices[active] = np.arange(N)
+        basic_indices = np.sort(basic_indices)
+        possible_indices = np.arange(M + N)
+        unused = np.ones(M + N).astype(np.bool_)
+        unused[basic_indices] = False
+
+        non_basic_indices = possible_indices[unused]
+
+        δ_v = abs(np.linalg.det(tableu[:M, basic_indices]))
+
+        # So now it's for the constraints that are active that we need to figure out
+        # Which is a NB variable
+        c = tableu[-1, :M+N]
+        c_N = c[non_basic_indices]
+        c_B = c[basic_indices]
+        # Matrix for basic  variables
+
+        A_B = tableu[:M, basic_indices]
+
+        # Matrix for non-basic variables
+        A_N = tableu[:M, non_basic_indices]
+
+        # Reduced cost
+        cost = c_N - c_B @ np.linalg.inv(A_B) @ A_N
+        f_v = np.sum(p)
+        volume += f_v**N/np.prod(cost) * 1/δ_v
+    volume /= math.factorial(N)
+    return volume
