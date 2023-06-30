@@ -9,16 +9,19 @@ def extreme(poly1):
     @param poly1: Polytope in dimension d
     @return: A (N x d) numpy array containing the N vertices of poly1
     """
-    if poly1.vertices is not None:
+    if poly1.vertices is not None and hasattr(poly1, 'active'):
         # In case vertices already stored
         return poly1.vertices
+
+    if not poly1.minrep:
+        print("quickhull.extreme: Polytope must be reduced.")
+
     V = np.array([])
     R = np.array([])
     if isinstance(poly1, Region):
         raise Exception("extreme: not executable for regions")
     # `poly1` is a `Polytope`
     # TODO: change so that we assume that poly1 is already reduced
-    poly1 = reduce(poly1)  # Need to have polytope non-redundant!
     if not is_fulldim(poly1):
         return None
     # `poly1` isn't flat
