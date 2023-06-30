@@ -78,7 +78,8 @@ def qhull_integrate_polytope(poly, extreme):
     except Exception:
         return 0
 
-def lawrence_integrate_polytope(poly, extreme):
+def lawrence_integrate_polytope_slow(poly, extreme):
+    # Kept as a reference implementation
     #from quickhull import extreme
     #N = A.shape[1]
     #M = A.shape[0]
@@ -112,7 +113,7 @@ def lawrence_integrate_polytope(poly, extreme):
         # Find the basic and non-basic variables
         basic_indices = np.arange(M)
         basic_indices[np.logical_not(active)] += N # These are the basic slack variables
-        basic_indices[active] = np.arange(N)[np.logical_not(np.isclose(p, 0))] # These are the basic non-slack variables
+        basic_indices[active] = np.arange(N)
         basic_indices = np.sort(basic_indices)
         possible_indices = np.arange(M + N)
         unused = np.ones(M + N).astype(np.bool_)
@@ -139,4 +140,51 @@ def lawrence_integrate_polytope(poly, extreme):
         f_v = np.sum(p)
         volume += f_v**N/np.prod(cost) * 1/δ_v
     volume /= math.factorial(N)
+    return volume
+
+def lawrence_integrate_polytope(poly, extreme):
+    if not poly.minrep:
+        print("compute_volme.qhull_integrate_polytope: Polytope must be in minimal representation")
+
+    vertices, active_constraints = extreme(poly)
+
+
+    A = poly.A
+    b = poly.b
+    N = A.shape[1]
+    M = A.shape[0]
+    n_vertices = vertices.shape[0]
+    
+    slack = np.identity(M)
+    last_row = np.zeros((1, A.shape[1] + M + 1))
+    tableu = np.concatenate((A[:M], slack, b.reshape(b.shape[0], 1)[:M]), axis=-1)
+    tableu = np.concatenate((tableu, last_row), axis=0)
+    tableu[-1, :N] = -1
+    
+    active = np.zeros((n_vertices, M), dtype=bool)
+    np.put_along_axis(active, active_constraints, np.ones((active_constraints.shape)), axis=-1)
+    basic_indices = np.arange(M)[None, :].repeat(n_vertices, 0)
+    basic_indices[~active] += N
+    basic_indices[active] = np.arange(N)[None, :].repeat(n_vertices, 0).flatten()
+    basic_indices = np.sort(basic_indices, axis=-1)
+    possible_indices = np.arange(M + N)[None, :].repeat(n_vertices, 0)
+    unused = np.ones((n_vertices, M + N)).astype(bool)
+    np.put_along_axis(unused, basic_indices, np.zeros(basic_indices.shape), -1)
+
+    non_basic_indices = possible_indices[unused].reshape(n_vertices, -1)
+    δ_v = np.abs(np.linalg.det(tableu[:M, basic_indices].transpose(1, 0, 2)))
+
+    c = tableu[-1, :M+N]
+    c_N = c[non_basic_indices]
+    c_B = c[basic_indices]
+
+    A_B = tableu[:M, basic_indices].transpose(1, 0, 2)
+
+    # Matrix for non-basic variables
+    A_N = tableu[:M, non_basic_indices].transpose(1, 0, 2)
+
+    # Reduced cost
+    cost = c_N - (c_B[:, None, :] @ np.linalg.inv(A_B) @ A_N)[:, 0, :]
+    f_v = np.sum(vertices, axis=-1)
+    volume = np.sum(f_v**N/np.prod(cost, axis=-1) * 1/δ_v) / math.factorial(N)
     return volume
