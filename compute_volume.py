@@ -37,11 +37,11 @@ def dd_extreme(poly):
     try:
         A, b = poly.A, poly.b
         b_2d = b.reshape((b.shape[0], 1))
-        linsys = cdd.Matrix(np.hstack([b_2d, -A]), number_type='float')
+        linsys = cdd.Matrix(np.hstack([b_2d, -A]), number_type='fraction')
         linsys.rep_type = cdd.RepType.INEQUALITY
         P = cdd.Polyhedron(linsys)
         generators = P.get_generators()
-        vertices = np.array(generators)[:,1:]
+        vertices = np.vectorize(float)(np.array(generators)[:,1:])
         active = np.argsort(np.abs(b[:, None] - (A @ vertices.T)).T, axis=-1)[:, :A.shape[1]]
     except Exception as e:
         print(f"Caught exception: {e}")
