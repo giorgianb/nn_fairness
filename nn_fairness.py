@@ -40,9 +40,13 @@ from collections import namedtuple
 from collections.abc import Mapping, Sequence
 
 from quad import integrate
+from rtree import index
+from polytope import Polytope, reduce
+from sklearn.decomposition import PCA
 
-quad.volume = quad.qhull_integrate_polytope
-quad.extreme = quad.qhull_extreme
+
+quad.volume = quad.lawrence_integrate_polytope
+quad.extreme = quad.dd_extreme
 
 def set_settings():
     """exact analysis settings"""
@@ -90,223 +94,17 @@ def compute_intersection_lpi(lpi1, lpi2):
 
     return rv
 
-def get_bounding_box(lpi):
+def get_bounding_box(lpi, directions=None):
     bb = []
-    A = lpi.get_constraints_csr().toarray()
-    b = lpi.get_rhs()
-    for i in range(A.shape[1]):
-        v = np.zeros(A.shape[1])
-        v[i] = 1
-        min_bound = lpi.minimize(v)[i]
-        max_bound = lpi.minimize(-v)[i]
+    if directions is None:
+        A = lpi.get_constraints_csr().toarray()
+        directions = np.eye(A.shape[1])
+    for i, v in enumerate(directions):
+        min_bound = (v @ lpi.minimize(v))
+        max_bound = (v @ lpi.minimize(-v))
         bb.append((min_bound, max_bound))
 
     return np.array(bb)
-
-def bounding_boxes_overlap(bb0, bb1):
-    return (np.any(bb0[1, :] < bb1[0, :]) or np.any(bb1[1, :] < bb0[0, :]))
-
-def load_class_prob(config):
-    with open(config['train_data_path'], 'rb') as f:
-        data_dict = pickle.load(f)
-        X = data_dict['X_train']
-
-    c1 = config['class_1']
-    c2 = config['class_2']
-    class_1_indices = np.array(c1['indices'])
-    class_1_values = np.array(c1['values'])
-    class_2_indices = np.array(c2['indices'])
-    class_2_values = np.array(c2['values'])
-    def is_class_1(x):
-        return np.allclose(x[class_1_indices], class_1_values, atol=1e-1)
-
-    def is_class_2(x):
-        return np.allclose(x[class_2_indices], class_2_values, atol=1e-1)
-
-    class_1_prob = ProbabilityDensityComputer(
-            X,
-            config['discrete_indices'],
-            config['continuous_indices'],
-            config['one_hot_indices'],
-            config['fixed_indices'],
-            is_class_1
-    )
-
-    class_2_prob = ProbabilityDensityComputer(
-            X,
-            config['discrete_indices'],
-            config['continuous_indices'],
-            config['one_hot_indices'],
-            config['fixed_indices'],
-            is_class_2
-    )
-
-    return class_1_prob, class_2_prob
-
-def run_on_model(config, model_index):
-    set_settings()
-    with open(config['train_data_path'], 'rb') as f:
-        data_dict = pickle.load(f)
-        X = data_dict['X_train']
-
-    c1 = config['class_1']
-    c2 = config['class_2']
-    class_1_indices = np.array(c1['indices'])
-    class_1_values = np.array(c1['values'])
-    class_2_indices = np.array(c2['indices'])
-    class_2_values = np.array(c2['values'])
-    def is_class_1(x):
-        return np.allclose(x[class_1_indices], class_1_values, atol=1e-1)
-
-    def is_class_2(x):
-        return np.allclose(x[class_2_indices], class_2_values, atol=1e-1)
-
-    class_1_prob = ProbabilityDensityComputer(
-            X,
-            config['discrete_indices'],
-            config['continuous_indices'],
-            config['one_hot_indices'],
-            config['fixed_indices'],
-            is_class_1
-    )
-
-    class_2_prob = ProbabilityDensityComputer(
-            X,
-            config['discrete_indices'],
-            config['continuous_indices'],
-            config['one_hot_indices'],
-            config['fixed_indices'],
-            is_class_2
-    )
-
-    class_1_box = c1['box']
-    class_2_box = c2['box']
-
-    # results_dict['model_size']['metric']['fairness_action']
-    results_dict = defaultdict(lambda: defaultdict(dict))
-    network_label, onnx_filename, auc = config['models'][model_index]
-    network = load_onnx_network_optimized(onnx_filename)
-
-    inits = [class_1_box, class_2_box] #[male_inits, female_inits]
-    probs = [class_1_prob, class_2_prob]
-    labels = [c1['label'], c2['label']]
-
-    lpi_polys = []
-    total_probabilities = []
-    total_time = 0
-    for i, (init, prob, label) in enumerate(zip(inits, probs, labels)):
-        lpi_polys.append([])
-
-
-        for hot_indices in product(*config['one_hot_indices']):
-            init_box = np.array(init, dtype=np.float32)
-            init_box[list(hot_indices)] = 1
-            t1 = time.perf_counter()
-            res = enumerate_network(init_box, network)
-            t2 = time.perf_counter()
-            total_time += (t2 - t1)
-            result_str = res.result_str
-            assert result_str == "none"
-
-            print(f"[{(network_label, model_index)}] {labels[i]} split into {len(res.stars)} polys")
-
-            for star in res.stars:
-                # add constaint that output < 0 (low risk)
-                assert star.a_mat.shape[0] == 1, "single output should mean single row"
-                row = star.a_mat[0]
-                bias = star.bias[0]
-
-                star.lpi.add_dense_row(row, -bias)
-                #star.lpi.add_dense_row(-2*row, -bias - 1)
-
-                if star.lpi.is_feasible():
-                    bounding_box = get_bounding_box(star.lpi)
-                    lpi_polys[i].append((star.lpi, bounding_box))
-
-
-
-    print(f"[{(network_label, model_index)}] lp_polys size: {tuple(len(poly) for poly in lpi_polys)}") 
-    try:
-        for label_0, polys_0, prob_0 in zip(labels, lpi_polys, probs):
-            total_probability = 0
-            print(f"[Calculating total probability]")
-            for lpi, bounding_box in tqdm.tqdm(polys_0):
-                total_probability += integrate(lpi, prob_0, config['fixed_indices'])
-
-            print("total probability:", total_probability)
-            for label_1, polys_1, prob_1 in zip(labels, lpi_polys, probs):
-                if label_0 == label_1:
-                    continue
-
-                pref_prob = 0
-                print(f"[Calculating Preference Probability]")
-                for lpi, bounding_box in tqdm.tqdm(polys_1):
-                    pref_prob += integrate(lpi, prob_1, config['fixed_indices'])
-                print("preference probability:", pref_prob)
-
-                adv_prob = 0
-                print(f"[Calculating Advantage Probability]")
-                for (lpi_0, bb_0), (lpi_1, bb_1) in tqdm.tqdm(tuple(product(polys_0, polys_1))):
-                    if not bounding_boxes_overlap(bb_0, bb_1):
-                        pass
-                        #continue
-
-                    intersection_lpi = compute_intersection_lpi(lpi_0, lpi_1)
-
-                    if intersection_lpi.is_feasible():
-                        adv_prob += integrate(intersection_lpi, prob_0, config['fixed_indices'])
-
-                print("advantage probability:", adv_prob)
-                results_dict[network_label]['Advantage'][f"{label_0},{label_1}"] = total_probability - adv_prob
-                results_dict[network_label]['Preference'][f"{label_0},{label_1}"] = total_probability - pref_prob
-
-                print(f"[{(model_index, network_label)}] {label_0} advantage over {label_1}: {total_probability - adv_prob}")
-                print(f"[{(model_index, network_label)}] {label_0} preference over {label_1}: {total_probability - pref_prob}")
-        results_dict[network_label]['Symmetric Difference'] = sum(results_dict[network_label]['Advantage'].values())
-        results_dict[network_label]['Net Preference'] = sum(map(lambda x: max(x, 0), results_dict[network_label]['Advantage'].values()))
-        results_dict[network_label]['AUC'] = auc
-    except Exception:
-        raise
-
-    return results_dict
-
-
-
-
-def main():
-    """main entry point"""
-
-    init_plot()
-
-
-    # ideas:
-    # Initial set defined as star: (triangle), where unused input dimension is the pdf
-    #
-    # then, to integrate you just compute the area at the end
-    #
-    # symmetric difference = area1 + area2 - 2*area of intersection
-    # area of intersection can be optimized using zonotope box bounds
-    with open(sys.argv[1], 'r') as handle:
-        config = json.load(handle)
-
-
-    n_models = len(config['models'])
-    results = Parallel(n_jobs=8)(delayed(run_on_model)(config, i) for i in range(n_models))
-
-    results_dict = {}
-    for result in results:
-        for k, v in result.items():
-            results_dict[k] = v
-
-    with open(sys.argv[2], 'w') as handle:
-        print(f"Saving result to: {sys.argv[2]}")
-        json.dump(results_dict, handle)
-
-
-if __name__ == "__main__":
-    main()
-
-InputConfig = namedtuple("InputConfig", ("one_hot_indices", "discrete_indices"))
 
 class FairnessCalculator:
     def __init__(self, network: NeuralNetwork):
@@ -332,8 +130,12 @@ class FairnessCalculator:
                 res = enumerate_network(init_box, self.network)
                 for star in res.stars:
                     #print(f'{star.a_mat.shape=}, {star.bias.shape=}')
+                    #print(f'{star.a_mat=}')
+                    #print(f'{star.bias=}')
                     row = star.a_mat[0]
                     bias = star.bias[0]
+                    A = star.lpi.get_constraints_csr().toarray()
+                    #print(f'{A=}')
 
                     # TODO: look into why we do this
                     star.lpi.add_dense_row(row, -bias)
@@ -353,19 +155,33 @@ class FairnessCalculator:
         return fixed_box
 
     def _compute_fixed_indices(self, init_box):
-        fixed_indices = []
-        for i, (l, u) in enumerate(init_box):
-            if l == u:
-                fixed_indices.append(i)
-        return fixed_indices
+        return np.where(init_box[:, 0] == init_box[:, 1])[0]
 
 class FairnessMetrics:
     def __init__(self, lpi_polys: Mapping, fixed_indices: Mapping):
         self.lpi_polys = lpi_polys
         self.fixed_indices = dict(fixed_indices)
+        self.intervals = {}
+        for k, v in lpi_polys.items():
+            if len(v) == 0:
+                continue
+
+            n = v[0][1].shape[0]
+            p = index.Property(dimension=n)
+            self.intervals[k] = index.Index(interleaved=False, properties=p)
+            for i, (lpi, bb) in enumerate(v):
+                self.intervals[k].insert(i, bb.flatten())
 
     # Advantage: percentage of whites not accepted as blacks
-    def advantage(self, probs: Union[Mapping, Sequence], label=None):
+    def advantage(self, probs: Union[Mapping, Sequence], label=None, progress=False):
+        def progress_bar(item, total=None, desc=None):
+            if progress:
+                if total is None and hasattr(item, '__len__'):
+                    total = len(item)
+                return tqdm.tqdm(item, total=total, desc=desc)
+            else:
+                return item
+
         if isinstance(probs, Sequence):
             probs_dict = {}
             for i, prob in enumerate(probs):
@@ -377,7 +193,8 @@ class FairnessMetrics:
             total_probability = 0
             polys_0 = self.lpi_polys[label_0]
 
-            for lpi, bounding_box in polys_0:
+
+            for lpi, bounding_box in progress_bar(polys_0):
                 total_probability += integrate(lpi, prob_0, self.fixed_indices[label_0])
 
             for label_1, prob_1 in probs.items():
@@ -386,15 +203,18 @@ class FairnessMetrics:
 
                 polys_1 = self.lpi_polys[label_1]
                 adv_prob = 0
-                for (lpi_0, bb_0), (lpi_1, bb_1) in product(polys_0, polys_1):
-                    # TODO: fix. This does not work correctly!!
-                    if not bounding_boxes_overlap(bb_0, bb_1):
-                        continue
 
-                    intersection_lpi = compute_intersection_lpi(lpi_0, lpi_1)
+                intervals = self.intervals[label_1]
+                for i, (lpi_0, bb_0) in enumerate(progress_bar(polys_0)):
+                    candidates = intervals.intersection(bb_0.flatten())
+                    for candidate in candidates:
+                        lpi_1, _ = polys_1[candidate]
+                        intersection_lpi = compute_intersection_lpi(lpi_0, lpi_1)
 
-                    if intersection_lpi.is_feasible():
-                        adv_prob += integrate(intersection_lpi, prob_0, self.fixed_indices[label_0])
+                        if intersection_lpi.is_feasible():
+                            adv_prob += integrate(intersection_lpi, prob_0, self.fixed_indices[label_0])
+
+
                 if label is None:
                     result = (total_probability - adv_prob, total_probability)
                 else:
@@ -405,7 +225,16 @@ class FairnessMetrics:
         return advantage
 
     # Disadvantage: Proportion of blacks that would have been accepted as white
-    def disadvantage(self, probs: Union[Mapping, Sequence], label=None):
+    def disadvantage(self, probs: Union[Mapping, Sequence], label=None, progress=False):
+        def progress_bar(item, total=None, desc=None):
+            if progress:
+                if total is None and hasattr(item, '__len__'):
+                    total = len(item)
+                return tqdm.tqdm(item, total=total, desc=desc)
+            else:
+                return item
+
+
         if isinstance(probs, Sequence):
             probs_dict = {}
             for i, prob in enumerate(probs):
@@ -425,21 +254,24 @@ class FairnessMetrics:
 
                 # We calculate the acceptance proportion evaluating it using the rules of the other race
                 counterfactual_probability = 0
-                for lpi, bounding_box in polys_0:
+                for lpi, bounding_box in progress_bar(polys_0):
                     counterfactual_probability += integrate(lpi, prob_1, self.fixed_indices[label_1])
 
 
                 polys_1 = self.lpi_polys[label_1]
                 disadv_prob = 0
+
                 # We calculate how many are accepted under both rules
-                for (lpi_0, bb_0), (lpi_1, bb_1) in product(polys_0, polys_1):
-                    if not bounding_boxes_overlap(bb_0, bb_1):
-                        continue
+                intervals = self.intervals[label_1]
+                for lpi_0, bb_0 in progress_bar(polys_0):
+                    candidates = intervals.intersection(bb_0.flatten())
+                    for candidate in candidates:
+                        lpi_1, _ = polys_1[candidate]
+                        intersection_lpi = compute_intersection_lpi(lpi_0, lpi_1)
 
-                    intersection_lpi = compute_intersection_lpi(lpi_0, lpi_1)
+                        if intersection_lpi.is_feasible():
+                            disadv_prob += integrate(intersection_lpi, prob_1, self.fixed_indices[label_1])
 
-                    if intersection_lpi.is_feasible():
-                        disadv_prob += integrate(intersection_lpi, prob_1, self.fixed_indices[label_1])
                 if label is None:
                     result = (counterfactual_probability - disadv_prob, counterfactual_probability)
                 else:
@@ -450,7 +282,15 @@ class FairnessMetrics:
 
         return disadvantage
 
-    def preference(self, probs: Union[Mapping, Sequence], label=None):
+    def preference(self, probs: Union[Mapping, Sequence], label=None, progress=False):
+        def progress_bar(item, total=None, desc=None):
+            if progress:
+                if total is None and hasattr(item, '__len__'):
+                    total = len(item)
+                return tqdm.tqdm(item, total=total, desc=desc)
+            else:
+                return item
+
         if isinstance(probs, Sequence):
             probs_dict = {}
             for i, prob in enumerate(probs):
@@ -462,7 +302,7 @@ class FairnessMetrics:
             polys_0 = self.lpi_polys[label_0]
             total_probability = 0
 
-            for lpi, bounding_box in polys_0:
+            for lpi, _ in progress_bar(polys_0):
                 total_probability += integrate(lpi, prob_0, self.fixed_indices[label_0])
 
             for label_1, prob_1 in probs.items():
@@ -471,7 +311,7 @@ class FairnessMetrics:
 
                 polys_1 = self.lpi_polys[label_1]
                 pref_prob = 0
-                for lpi, bounding_box in polys_1:
+                for lpi, _ in progress_bar(polys_1):
                     pref_prob += integrate(lpi, prob_1, self.fixed_indices[label_1])
 
                 if total_probability == 0:
