@@ -3,6 +3,7 @@ from scipy.integrate import quad
 import numpy as np
 from itertools import chain
 from collections import defaultdict
+from abc import ABC, abstractmethod
 
 class ProbabilityDensityComputer:
     """computes probability of input at given point"""
@@ -31,7 +32,7 @@ class ProbabilityDensityComputer:
         self.discrete_volumes = [sum(f(k) for k in d.keys()) for f, d in zip(self.discrete_funcs, self.discrete)]
         self.one_hot_volumes = [sum(f(k) for k in d.keys()) for f, d in zip(self.one_hot_funcs, self.one_hot)]
         self.continuous_bounds = [tuple(zip(d[:, 0], d[1:, 0])) for d in self.continuous]
-        non_discretized_continous_bounds = [(np.min(d[:, 0]), np.max(d[:, 0])) for d in self.continuous]
+        self.non_discretized_continuous_bounds = [[(np.min(d[:, 0]), np.max(d[:, 0]))] for d in self.continuous]
         self.discrete_bounds = [[(k, k) for k in sorted(d.keys())] for d in self.discrete]
         self.one_hot_bounds = [[(one_hot(k, len(d.keys())), one_hot(k, len(d.keys()))) for k in sorted(d.keys())] for d in self.one_hot]
         regions = sorted(
@@ -44,7 +45,7 @@ class ProbabilityDensityComputer:
 
         non_discretized_regions = sorted(
                 chain(
-                    zip([[k] for k in continuous_indices], self.continuous_bounds),
+                    zip([[k] for k in continuous_indices], self.non_discretized_continuous_bounds),
                     zip([[k] for k in discrete_indices], self.discrete_bounds),
                     zip(one_hot_indices, self.one_hot_bounds)
                     )
@@ -73,7 +74,9 @@ class ProbabilityDensityComputer:
 
     @property
     def regions(self):
-        return product(*self._regions)
+        if hasattr(self, 'discretized'):
+            return product(*self._regions)
+        return product(*self._non_discretized_regions)
 
     @property
     def non_discretized_regions(self):
