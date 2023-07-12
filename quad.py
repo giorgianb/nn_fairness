@@ -1,4 +1,4 @@
-from compute_volume import qhull_integrate_polytope, lawrence_integrate_polytope
+from compute_volume import qhull_integrate_polytope, lawrence_integrate_polytope, lawrence_integrate_polytope_slow
 from compute_volume import qhull_extreme, dd_extreme
 import compute_volume
 from nnenum.lpinstance import LpInstance
@@ -12,6 +12,8 @@ extreme = qhull_extreme
 
 
 def integrate(lpi, pdf, fixed_indices):
+    # Fixed indices are those that are fixed in the input set
+    # So they are not in the matrix A
     prob = 0
 
     A_lpi = lpi.get_constraints_csr().toarray()
@@ -92,6 +94,8 @@ def integrate(lpi, pdf, fixed_indices):
             b -= A[:, to_eliminate_cols] @ to_eliminate_vals
             A = A[:, to_keep_cols]
 
+        A = np.array(A)
+        b = np.array(b)
         poly = reduce(Polytope(A, b))
         poly.minrep = True
         prob += volume(poly, extreme)*p
