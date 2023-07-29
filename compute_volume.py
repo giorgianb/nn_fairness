@@ -12,6 +12,7 @@ from polytope import Polytope, extreme, is_fulldim
 from scipy.spatial import ConvexHull
 from icecream import ic
 import math
+from scipy.special import factorial
 
 import quickhull
 import cdd
@@ -158,14 +159,14 @@ def lawrence_integrate_polytope(poly, extreme, coeffs=None, P=0):
     n_vertices = vertices.shape[0]
 
     if coeffs is None:
-        coeffs = np.ones(N)
+        coeffs = np.ones((1, N))
+        P = np.array([0])
 
     
     slack = np.identity(M)
-    last_row = np.zeros((1, A.shape[1] + M + 1))
+    last_row = np.zeros((coeffs.shape[0], A.shape[1] + M + 1))
     tableu = np.concatenate((A[:M], slack, b.reshape(b.shape[0], 1)[:M]), axis=-1)
-    tableu = np.concatenate((tableu, last_row), axis=0)
-    tableu[-1, :N] = -coeffs
+    last_row[:, :N] = -coeffs
     
     active = np.zeros((n_vertices, M), dtype=bool)
     np.put_along_axis(active, active_constraints, np.ones((active_constraints.shape)), axis=-1)
@@ -180,9 +181,9 @@ def lawrence_integrate_polytope(poly, extreme, coeffs=None, P=0):
     non_basic_indices = possible_indices[unused].reshape(n_vertices, -1)
     δ_v = np.abs(np.linalg.det(tableu[:M, basic_indices].transpose(1, 0, 2)))
 
-    c = tableu[-1, :M+N]
-    c_N = c[non_basic_indices]
-    c_B = c[basic_indices]
+    c = last_row[:, :M+N]
+    c_N = c[:, non_basic_indices].transpose(1, 0, 2)
+    c_B = c[:, basic_indices].transpose(1, 0, 2)
 
     A_B = tableu[:M, basic_indices].transpose(1, 0, 2)
 
@@ -190,8 +191,8 @@ def lawrence_integrate_polytope(poly, extreme, coeffs=None, P=0):
     A_N = tableu[:M, non_basic_indices].transpose(1, 0, 2)
 
     # Reduced cost
-    cost = c_N - (c_B[:, None, :] @ np.linalg.inv(A_B) @ A_N)[:, 0, :]
+    cost = c_N - (c_B @ np.linalg.inv(A_B) @ A_N)
     # f_v will need to change
-    f_v = np.einsum('j,ij->i', coeffs, vertices)
-    volume = math.factorial(P) * np.sum(f_v**(N + P)/np.prod(cost, axis=-1) * 1/δ_v) / math.factorial(N + P)
+    f_v = np.einsum('...j,ij->...i', coeffs, vertices)
+    volume = factorial(P) * np.sum(f_v**(N + P)[:, None]/np.prod(cost, axis=-1).T * 1/δ_v, axis=-1) / factorial(N + P)
     return volume, vertices
