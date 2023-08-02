@@ -135,11 +135,16 @@ class FairnessCalculator:
                     row = star.a_mat[0]
                     bias = star.bias[0]
                     A = star.lpi.get_constraints_csr().toarray()
-                    #print(f'{A=}')
+                    b = star.lpi.get_rhs()
+                    #print(f'{A=} {b=}')
+                    #print(f'{star.a_mat=} {star.bias=}')
+                    #print('lpi: ', star.lpi)
 
                     # TODO: look into why we do this
+                    #star.lpi.add_dense_row(row, -bias)
                     star.lpi.add_dense_row(row, -bias)
                     #star.lpi.add_dense_row(-2*row, -bias - 1)
+                    #print('lpi after: ', star.lpi)
 
                     if star.lpi.is_feasible():
                         bounding_box = get_bounding_box(star.lpi)
@@ -195,7 +200,7 @@ class FairnessMetrics:
 
 
             for lpi, bounding_box in progress_bar(polys_0):
-                total_probability += integrate(lpi, prob_0, self.fixed_indices[label_0])
+                total_probability += prob_0.integrate(lpi, self.fixed_indices[label_0])
 
             for label_1, prob_1 in probs.items():
                 if label_0 == label_1:
@@ -212,14 +217,14 @@ class FairnessMetrics:
                         intersection_lpi = compute_intersection_lpi(lpi_0, lpi_1)
 
                         if intersection_lpi.is_feasible():
-                            adv_prob += integrate(intersection_lpi, prob_0, self.fixed_indices[label_0])
+                            adv_prob += prob_0.integrate(intersection_lpi, self.fixed_indices[label_0])
 
 
                 if label is None:
-                    result = (total_probability - adv_prob, total_probability)
+                    result = (max(total_probability - adv_prob, 0), total_probability)
                 else:
-                    diff = total_probability - adv_prob
-                    result = (total_probability - adv_prob, total_probability, f'{diff*100}% of all {label_0} individuals would have not been classified {label} if only they had been {label_1}')
+                    diff = max(total_probability - adv_prob, 0)
+                    result = (max(total_probability - adv_prob, 0), total_probability, f'{diff*100}% of all {label_0} individuals would have not been classified {label} if only they had been {label_1}')
                 advantage[(label_0, label_1)] = result
 
         return advantage
@@ -255,7 +260,7 @@ class FairnessMetrics:
                 # We calculate the acceptance proportion evaluating it using the rules of the other race
                 counterfactual_probability = 0
                 for lpi, bounding_box in progress_bar(polys_0):
-                    counterfactual_probability += integrate(lpi, prob_1, self.fixed_indices[label_1])
+                    counterfactual_probability += prob_1.integrate(lpi, self.fixed_indices[label_1])
 
 
                 polys_1 = self.lpi_polys[label_1]
@@ -270,13 +275,13 @@ class FairnessMetrics:
                         intersection_lpi = compute_intersection_lpi(lpi_0, lpi_1)
 
                         if intersection_lpi.is_feasible():
-                            disadv_prob += integrate(intersection_lpi, prob_1, self.fixed_indices[label_1])
+                            disadv_prob += prob_1.integrate(intersection_lpi, self.fixed_indices[label_1])
 
                 if label is None:
-                    result = (counterfactual_probability - disadv_prob, counterfactual_probability)
+                    result = (max(counterfactual_probability - disadv_prob, 0), counterfactual_probability)
                 else:
-                    diff = counterfactual_probability - disadv_prob
-                    result = (counterfactual_probability - disadv_prob, counterfactual_probability, f'{diff*100}% of all {label_1} individuals would have been classified {label} if only they had been {label_0}')
+                    diff = max(counterfactual_probability - disadv_prob, 0)
+                    result = (max(counterfactual_probability - disadv_prob, 0), counterfactual_probability, f'{diff*100}% of all {label_1} individuals would have been classified {label} if only they had been {label_0}')
 
                 disadvantage[(label_1, label_0)] = result
 
@@ -303,7 +308,7 @@ class FairnessMetrics:
             total_probability = 0
 
             for lpi, _ in progress_bar(polys_0):
-                total_probability += integrate(lpi, prob_0, self.fixed_indices[label_0])
+                total_probability += prob_0.integrate(lpi, self.fixed_indices[label_0])
 
             for label_1, prob_1 in probs.items():
                 if label_0 == label_1:
@@ -312,8 +317,9 @@ class FairnessMetrics:
                 polys_1 = self.lpi_polys[label_1]
                 pref_prob = 0
                 for lpi, _ in progress_bar(polys_1):
-                    pref_prob += integrate(lpi, prob_1, self.fixed_indices[label_1])
+                    pref_prob += prob_1.integrate(lpi, self.fixed_indices[label_1])
 
+                pref_prob = max(pref_prob, 0)
                 if total_probability == 0:
                     if pref_prob == 0:
                         result = (1, total_probability)
