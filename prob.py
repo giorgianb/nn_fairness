@@ -1,10 +1,11 @@
 from itertools import product
-from scipy.integrate import quad
+from scipy.integrate import nquad
 import numpy as np
 from itertools import chain
 from collections import defaultdict
 from abc import ABC, abstractmethod
 from sklearn.neighbors import KernelDensity
+from sklearn.linear_model import LinearRegression
 
 class KProbabilityDensity:
     """polynomially computes probability of input at given point"""
@@ -19,14 +20,14 @@ class KProbabilityDensity:
 
         X = X[matches_given]
 
-        self.discrete_indices = tuple(sorted(input_class.discrete_indices.values()))
-        self.continuous_indices = tuple(sorted(input_class.continuous_indices.values()))
-        self.one_hot_indices = tuple(sorted(input_class.one_hot_indices.values()))
+        self.discrete_indices = tuple(sorted(input_class.specification.discrete_indices.values()))
+        self.continuous_indices = tuple(sorted(input_class.specification.continuous_indices.values()))
+        self.one_hot_indices = tuple(sorted(input_class.specification.one_hot_indices.values()))
 
-        self.discrete = [make_discrete_distribution(X[:, i]) for i in discrete_indices]
-        self.one_hot = [make_one_hot_distribution(X[:, index_group]) for index_group in one_hot_indices]
+        self.discrete = [make_discrete_distribution(X[:, i]) for i in self.discrete_indices]
+        self.one_hot = [make_one_hot_distribution(X[:, index_group]) for index_group in self.one_hot_indices]
 
-        self.continuous_bounds = [(np.min(X[:, i]), np.max(X[:, i])) for i in continuous_indices]
+        self.continuous_bounds = [(np.min(X[:, i]), np.max(X[:, i])) for i in self.continuous_indices]
         self.discrete_bounds = [[(k, k) for k in sorted(d.keys())] for d in self.discrete]
         self.one_hot_bounds = [[(one_hot(k, len(d.keys())), one_hot(k, len(d.keys()))) for k in sorted(d.keys())] for d in self.one_hot]
 
@@ -39,32 +40,43 @@ class KProbabilityDensity:
         self.discrete_funcs = [make_discrete_func(d) for d in self.discrete]
         self.one_hot_funcs = [make_one_hot_func(d) for d in self.one_hot]
 
-        self.continuous_volume = nquad(self._continuous_sample, self.continuous_bounds)
+        # Note we can probably do this analytically
+        #self.continuous_volume = nquad(lambda *x: self._continuous_sample(np.array(x)), self.continuous_bounds)[0]
+        self.continuous_volume = 1
         self.discrete_volumes = [sum(f(k) for k in d.keys()) for f, d in zip(self.discrete_funcs, self.discrete)]
         self.one_hot_volumes = [sum(f(k) for k in d.keys()) for f, d in zip(self.one_hot_funcs, self.one_hot)]
 
         regions = sorted(
                 chain(
-                    zip([[k] for k in continuous_indices], self.continuous_bounds),
-                    zip([[k] for k in discrete_indices], self.discrete_bounds),
-                    zip(one_hot_indices, self.one_hot_bounds)
+                    zip([[k] for k in self.continuous_indices], self.continuous_bounds),
+                    zip([[k] for k in self.discrete_indices], self.discrete_bounds),
+                    zip(self.one_hot_indices, self.one_hot_bounds)
                     )
 
         )
         self._regions = tuple(map(lambda x: x[1], regions))
 
-    def _fit(X):
-        X_train = np.einsum('dfi,...i->...df', self.feature_generator, X[:, self.continuous_indices])
-        X_train = X_train.reshape(X_train.shape[0], -1)
-        X_test = np.random.uniform(size=(2*len(X), len(self.continuous_indices)))
-        kern = KernelDensity(kernel='epanechnikov', bandwidth=self.bandwidth).fit(X_train)
-        X_full = np.concatenate((X_train, X_test), axis=0)
+    def _fit(self, X):
+        # Use the kernel to generate the "ground truth" pdf
+        X = X[:, self.continuous_indices]
+        kern = KernelDensity(kernel='epanechnikov', bandwidth=self.bandwidth).fit(X)
+        # TODO: modify X_test so that the bounds given in input_class are respected
+        X_test = np.random.uniform(size=(2*X.shape[0], X.shape[1]))
+        X_full = np.concatenate((X, X_test), axis=0)
         y = np.exp(kern.score_samples(X_full))
-        lm = LinearRegression(positive=True).fit(X_full, y)
+
+        # Now we generate the features
+        X_train = np.einsum('dfi,bi->bdf', self.feature_generator, X_full)
+        deg = np.arange(self.feature_generator.shape[0])[None, :, None] + 1
+        X_train = X_train**deg
+        X_train = X_train.reshape(X_train.shape[0], -1)
+
+        lm = LinearRegression().fit(X_train, y)
         return lm.coef_.reshape(self.feature_generator.shape[:-1]), lm.intercept_
 
     def _continuous_sample(self, x):
-        X = np.einsum('dfi,..i->...df', self.feature_generator, x)
+        X = np.einsum('dfi,...i->...df', self.feature_generator, x)
+        X = X**(np.arange(self.feature_generator.shape[0])[None, :, None] + 1).reshape(X.shape[0], -1)
         y = np.einsum('...df,df->...', X, self.coeffs) + self.bias
         return y
 
@@ -72,7 +84,7 @@ class KProbabilityDensity:
         """get probability density at a point"""
 
         x = np.array(args)
-        p = self._continuous_sample(x)/self.continuous_volume
+        p = self._continuous_sample(x[list(self.continuous_indices)])/self.continuous_volume
         for func, volume, index in zip(self.discrete_funcs, self.discrete_volumes, self.discrete_indices):
             p *= func(x[index])/volume
 
@@ -84,6 +96,101 @@ class KProbabilityDensity:
     @property
     def regions(self):
         return product(*self._regions)
+
+    def integrate(self, lpi, fixed_indices):
+        # Fixed indices are those that are fixed in the input set
+        # So they are not in the matrix A
+        prob = 0
+
+        A_lpi = lpi.get_constraints_csr().toarray()
+        b_lpi = lpi.get_rhs()
+        lpi_copy = LpInstance(lpi)
+       
+        for region in self.regions:
+            # TODO: move this to a function
+            A = A_lpi.copy()
+            b = b_lpi.copy()
+            # check if it's feasible before computing volume
+            col_index = 0
+            A_col_index = 0
+            for (lbound, ubound) in region:
+                if lbound == ubound and type(lbound) != tuple:
+                    if col_index not in fixed_indices:
+                        glpk.glp_set_col_bnds(lpi_copy.lp, A_col_index + 1, glpk.GLP_FX, lbound, lbound) # needs: import swiglpk as glpk
+                        A_col_index += 1
+                    col_index += 1
+                # Handle one-hot type
+                elif type(lbound) == tuple:
+                    for val in lbound:
+                        if col_index not in fixed_indices:
+                            glpk.glp_set_col_bnds(lpi_copy.lp, A_col_index + 1, glpk.GLP_FX, val, val) # needs: import swiglpk as glpk
+                            A_col_index += 1
+                        col_index += 1
+                else:
+                    if col_index not in fixed_indices:
+                        glpk.glp_set_col_bnds(lpi_copy.lp, A_col_index + 1, glpk.GLP_DB, lbound, ubound) # needs: import swiglpk as glpk
+                        A_col_index += 1
+                    col_index += 1
+
+            feasible = lpi_copy.is_feasible()
+            if not feasible:
+                continue
+
+            point = []
+            to_eliminate_cols = []
+            to_eliminate_vals = []
+            to_keep_cols = []
+            col_index = 0
+            A_col_index = 0
+            for i, (lbound, ubound) in enumerate(region):
+                p = lbound if lbound == ubound else (lbound + ubound) / 2
+                if lbound == ubound and type(p) != tuple:
+                    if col_index not in fixed_indices:
+                        to_eliminate_cols.append(A_col_index)
+                        to_eliminate_vals.append(lbound)
+                        A_col_index += 1
+                    col_index += 1
+                    point.append(p)
+                elif type(p) == tuple:
+                    for val in p:
+                        if col_index not in fixed_indices:
+                            to_eliminate_cols.append(A_col_index)
+                            to_eliminate_vals.append(val)
+                            A_col_index += 1
+                        col_index += 1
+                    point.extend(p)
+                else:
+                    row = np.zeros((1, A.shape[1]))
+                    row[0, A_col_index] = 1
+                    A = np.concatenate((A, row, -row), axis=0)
+                    b = np.append(b, (ubound, -lbound))
+                    if col_index not in fixed_indices:
+                        to_keep_cols.append(A_col_index)
+                        A_col_index += 1
+                    col_index += 1
+                    point.append(p)
+
+            if len(to_eliminate_cols) > 0:
+                to_eliminate_vals = np.array(to_eliminate_vals)
+                b -= A[:, to_eliminate_cols] @ to_eliminate_vals
+                A = A[:, to_keep_cols]
+
+            A = np.array(A)
+            b = np.array(b)
+            poly = reduce(Polytope(A, b))
+            poly.minrep = True
+            #prob += volume(poly, extreme)*p
+            lin_forms = self.feature_generator.reshape(-1, self.feature_generator.shape[-1])
+            lin_forms = np.concatenate([lin_forms, np.ones((1, lin_forms.shape[1]))], axis=0)
+            P = np.arange(self.feature_generator.shape[0])[None, :].repeat(self.feature_generator.shape[-1], axis=0).flatten()
+            P = np.concatenate([P, np.zeros(0)], axis=0)
+            v, vertices = lawrence_integrate_polytope(poly, dd_extreme, coeffs=coeffs, P=P)
+            v = np.maximum(v, 0)
+            coeffs = np.concatenate([self.coeffs, bias*np.ones(1)], dim=-1)
+            p += np.sum(v*coeffs)
+
+        return prob
+
 
 
 class ProbabilityDensityComputer:
