@@ -30,8 +30,6 @@ from collections import defaultdict
 import swiglpk as glpk
 import sys
 from joblib import Parallel, delayed
-import quad
-from prob import ProbabilityDensityComputer
 
 from nnenum.network import NeuralNetwork
 from typing import Union
@@ -39,14 +37,10 @@ from typing import Union
 from collections import namedtuple
 from collections.abc import Mapping, Sequence
 
-from quad import integrate
 from rtree import index
 from polytope import Polytope, reduce
 from sklearn.decomposition import PCA
 
-
-quad.volume = quad.lawrence_integrate_polytope
-quad.extreme = quad.dd_extreme
 
 def set_settings():
     """exact analysis settings"""
