@@ -145,7 +145,7 @@ def lawrence_integrate_polytope_slow(poly, extreme, coeffs=None, P=0):
     volume *= math.factorial(P)/math.factorial(N + P)
     return volume, vertices
 
-def lawrence_integrate_polytope(poly, extreme, coeffs=None, P=0):
+def lawrence_integrate_linear_form(poly, extreme, coeffs=None, P=0):
     if not poly.minrep:
         print("compute_volme.qhull_integrate_polytope: Polytope must be in minimal representation")
 
@@ -164,7 +164,7 @@ def lawrence_integrate_polytope(poly, extreme, coeffs=None, P=0):
 
     
     slack = np.identity(M)
-    last_row = np.zeros((coeffs.shape[0], A.shape[1] + M + 1))
+    last_row = np.zeros((coeffs.shape[0], A.shape[1] + M + 1), dtype=coeffs.dtype)
     tableu = np.concatenate((A[:M], slack, b.reshape(b.shape[0], 1)[:M]), axis=-1)
     last_row[:, :N] = -coeffs
     
@@ -195,4 +195,55 @@ def lawrence_integrate_polytope(poly, extreme, coeffs=None, P=0):
     # f_v will need to change
     f_v = np.einsum('...j,ij->...i', coeffs, vertices)
     volume = factorial(P) * np.sum(f_v**(N + P)[:, None]/np.prod(cost, axis=-1).T * 1/δ_v, axis=-1) / factorial(N + P)
+    return volume, vertices
+
+def lawrence_integrate_linear_exp(poly, extreme, coeffs=None):
+    if not poly.minrep:
+        print("compute_volme.qhull_integrate_polytope: Polytope must be in minimal representation")
+
+    vertices, active_constraints = extreme(poly)
+
+
+    A = poly.A
+    b = poly.b
+    N = A.shape[1]
+    M = A.shape[0]
+    n_vertices = vertices.shape[0]
+
+    if coeffs is None:
+        coeffs = np.ones((1, N))
+
+    
+    slack = np.identity(M)
+    last_row = np.zeros((coeffs.shape[0], A.shape[1] + M + 1), dtype=coeffs.dtype)
+    tableu = np.concatenate((A[:M], slack, b.reshape(b.shape[0], 1)[:M]), axis=-1)
+    last_row[:, :N] = -coeffs
+    
+    active = np.zeros((n_vertices, M), dtype=bool)
+    np.put_along_axis(active, active_constraints, np.ones((active_constraints.shape)), axis=-1)
+    basic_indices = np.arange(M)[None, :].repeat(n_vertices, 0)
+    basic_indices[~active] += N
+    basic_indices[active] = np.arange(N)[None, :].repeat(n_vertices, 0).flatten()
+    basic_indices = np.sort(basic_indices, axis=-1)
+    possible_indices = np.arange(M + N)[None, :].repeat(n_vertices, 0)
+    unused = np.ones((n_vertices, M + N)).astype(bool)
+    np.put_along_axis(unused, basic_indices, np.zeros(basic_indices.shape), -1)
+
+    non_basic_indices = possible_indices[unused].reshape(n_vertices, -1)
+    δ_v = np.abs(np.linalg.det(tableu[:M, basic_indices].transpose(1, 0, 2)))
+
+    c = last_row[:, :M+N]
+    c_N = c[:, non_basic_indices].transpose(1, 0, 2)
+    c_B = c[:, basic_indices].transpose(1, 0, 2)
+
+    A_B = tableu[:M, basic_indices].transpose(1, 0, 2)
+
+    # Matrix for non-basic variables
+    A_N = tableu[:M, non_basic_indices].transpose(1, 0, 2)
+
+    # Reduced cost
+    cost = c_N - (c_B @ np.linalg.inv(A_B) @ A_N)
+    # f_v will need to change
+    f_v = np.einsum('...j,ij->...i', coeffs, vertices)
+    volume = np.sum(np.exp(f_v)/np.prod(cost, axis=-1).T * 1/δ_v, axis=-1)
     return volume, vertices
